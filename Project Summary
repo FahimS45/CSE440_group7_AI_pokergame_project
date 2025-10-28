@@ -1,0 +1,36 @@
+
+
+## 🃏 **Project Summary — 
+
+This project aims to develop a **Texas Hold’em Poker Simulator** integrated with an **AI player that uses the Expectiminimax algorithm** for strategic decision-making under uncertainty.
+
+Poker, especially Texas Hold’em, involves a mix of **skill, strategy, and chance** — making it an ideal environment for studying decision-making algorithms that must reason about **hidden information** and **random events**.
+
+The simulator recreates a simplified two-player Texas Hold’em environment. It includes essential components such as a **card dealer**, **game environment**, **player models**, and **AI agents** capable of evaluating possible outcomes through a game tree that combines **MAX (AI moves)**, **MIN (opponent moves)**, and **CHANCE (card dealing)** nodes.
+
+The **Expectiminimax algorithm** allows the AI to calculate the **expected value of future game states** and choose the optimal move (fold, call, or raise) accordingly. The performance of the AI will be evaluated against a **random or rule-based opponent** by tracking win rates, decision quality, and chip outcomes over multiple simulated rounds.
+
+---
+
+### 🔍 **Objectives**
+
+* Simulate a simplified **Texas Hold’em Poker** environment.
+* Implement an **AI agent using Expectiminimax** for decision-making.
+* Evaluate AI performance against baseline strategies.
+* Analyze the effect of uncertainty and chance in strategic outcomes.
+
+---
+
+### ⚙️ **Key Components**
+
+* **Poker Environment** – Manages game stages, rules, and card flow.
+* **Expectiminimax AI** – Determines optimal actions under uncertainty.
+* **Card & Deck Module** – Handles shuffling and random dealing.
+* **Performance Analyzer** – Tracks statistics, win rates, and outcomes.
+
+---
+
+### 📊 **Expected Outcome**
+
+By the end of the project, the simulator will demonstrate how **Expectiminimax** enables intelligent, probabilistic decision-making in uncertain and adversarial environments — providing insights into **game AI design and strategic reasoning**.
+
