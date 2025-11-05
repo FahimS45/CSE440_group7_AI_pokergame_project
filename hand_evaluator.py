@@ -1,218 +1,188 @@
-"""
-Hand Evaluation System for Poker Game Simulator
-CSE440 Project: Develop a Poker Game Simulator with Expectiminimax
-"""
+from abc import ABC, abstractmethod
+from typing import List, Tuple
+from collections import Counter
 
-from enum import Enum
-from typing import List, Tuple, Dict
-
-class HandRank(Enum):
-    HIGH_CARD = 1
-    ONE_PAIR = 2
-    TWO_PAIR = 3
-    THREE_OF_A_KIND = 4
-    STRAIGHT = 5
-    FLUSH = 6
-    FULL_HOUSE = 7
-    FOUR_OF_A_KIND = 8
-    STRAIGHT_FLUSH = 9
-    ROYAL_FLUSH = 10
-
-class HandEvaluator:
-    def __init__(self):
-        self.rank_values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, 
-                           '7': 7, '8': 8, '9': 9, '10': 10, 
-                           'J': 11, 'Q': 12, 'K': 13, 'A': 14}
+class AbstractHandEvaluator(ABC):
+    """Defines how poker hands are evaluated and compared."""
     
-    def evaluate_hand(self, cards: List[Tuple[str, str]]) -> Tuple[HandRank, List[int]]:
+    @abstractmethod
+    def evaluate_hand(self, cards: List[str]) -> Tuple[int, List[int]]:
         """
-        Evaluate a poker hand and return its rank and tie-breaker values
+        Given a list of cards (e.g., ['AS', 'KH', 'QC', 'JD', '10S']),
+        return a tuple (rank_value, tiebreaker_list).
+        """
+        pass
+
+    @abstractmethod
+    def compare_hands(self, hand1: List[str], hand2: List[str]) -> int:
+        """
+        Compare two hands.
+        Return:
+          1 if hand1 wins,
+          -1 if hand2 wins,
+          0 if tie.
+        """
+        pass
+
+
+class PokerHandEvaluator(AbstractHandEvaluator):
+    """
+    Texas Hold'em hand evaluator that follows the standard poker hand rankings.
+    Hand rankings (higher number = better hand):
+    9 - Straight Flush
+    8 - Four of a Kind
+    7 - Full House
+    6 - Flush
+    5 - Straight
+    4 - Three of a Kind
+    3 - Two Pair
+    2 - One Pair
+    1 - High Card
+    """
+    
+    # Card rank to value mapping
+    RANK_VALUES = {
+        '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8,
+        '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
+    }
+    
+    def __init__(self):
+        pass
+    
+    def _parse_card(self, card: str) -> Tuple[int, str]:
+        """Convert card string to (rank_value, suit) tuple."""
+        # Handle 10 as a special case (2-character rank)
+        if card.startswith('10'):
+            return (10, card[2:])
+        else:
+            rank_str = card[0]
+            suit = card[1:]
+            return (self.RANK_VALUES[rank_str], suit)
+    
+    def _get_ranks_and_suits(self, cards: List[str]) -> Tuple[List[int], List[str]]:
+        """Extract ranks and suits from card list."""
+        ranks = []
+        suits = []
+        for card in cards:
+            rank_val, suit = self._parse_card(card)
+            ranks.append(rank_val)
+            suits.append(suit)
+        return ranks, suits
+    
+    def _is_flush(self, suits: List[str]) -> bool:
+        """Check if all cards are the same suit."""
+        return len(set(suits)) == 1
+    
+    def _is_straight(self, ranks: List[int]) -> Tuple[bool, int]:
+        """Check if ranks form a straight and return highest card."""
+        sorted_ranks = sorted(set(ranks))
+        
+        # Check for regular straight
+        for i in range(len(sorted_ranks) - 4):
+            if sorted_ranks[i+4] - sorted_ranks[i] == 4:
+                return True, sorted_ranks[i+4]
+        
+        # Check for wheel (A-2-3-4-5)
+        if set([14, 2, 3, 4, 5]).issubset(set(ranks)):
+            return True, 5  # 5 is the high card for wheel
+        
+        return False, 0
+    
+    def _get_rank_counts(self, ranks: List[int]) -> List[Tuple[int, int]]:
+        """Get counts of each rank, sorted by frequency then rank."""
+        counter = Counter(ranks)
+        # Sort by count (descending), then by rank (descending)
+        return sorted(counter.items(), key=lambda x: (x[1], x[0]), reverse=True)
+    
+    def evaluate_hand(self, cards: List[str]) -> Tuple[int, List[int]]:
+        """
+        Evaluate a poker hand and return (hand_rank, tiebreakers).
         
         Args:
-            cards: List of (rank, suit) tuples
+            cards: List of card strings (e.g., ['AS', 'KH', 'QC', 'JD', '10S'])
             
         Returns:
-            Tuple of (HandRank, tie_breaker_values)
+            Tuple of (hand_rank, tiebreaker_list)
         """
-        if len(cards) != 5:
-            raise ValueError("Hand must contain exactly 5 cards")
+        if len(cards) < 5:
+            raise ValueError("Need at least 5 cards to evaluate hand")
         
-        # Check for different hand types in descending order of rank
-        if self._is_royal_flush(cards):
-            return (HandRank.ROYAL_FLUSH, [])
-        elif self._is_straight_flush(cards):
-            high_card = self._get_straight_high_card(cards)
-            return (HandRank.STRAIGHT_FLUSH, [high_card])
-        elif self._is_four_of_a_kind(cards):
-            quad_rank, kicker = self._get_four_of_a_kind_info(cards)
-            return (HandRank.FOUR_OF_A_KIND, [quad_rank, kicker])
-        elif self._is_full_house(cards):
-            triple_rank, pair_rank = self._get_full_house_info(cards)
-            return (HandRank.FULL_HOUSE, [triple_rank, pair_rank])
-        elif self._is_flush(cards):
-            high_cards = self._get_flush_high_cards(cards)
-            return (HandRank.FLUSH, high_cards)
-        elif self._is_straight(cards):
-            high_card = self._get_straight_high_card(cards)
-            return (HandRank.STRAIGHT, [high_card])
-        elif self._is_three_of_a_kind(cards):
-            triple_rank, kickers = self._get_three_of_a_kind_info(cards)
-            return (HandRank.THREE_OF_A_KIND, [triple_rank] + kickers)
-        elif self._is_two_pair(cards):
-            pairs, kicker = self._get_two_pair_info(cards)
-            return (HandRank.TWO_PAIR, pairs + [kicker])
-        elif self._is_one_pair(cards):
-            pair_rank, kickers = self._get_one_pair_info(cards)
-            return (HandRank.ONE_PAIR, [pair_rank] + kickers)
-        else:
-            high_cards = self._get_high_cards(cards)
-            return (HandRank.HIGH_CARD, high_cards)
+        ranks, suits = self._get_ranks_and_suits(cards)
+        rank_counts = self._get_rank_counts(ranks)
+        
+        is_flush = self._is_flush(suits)
+        is_straight, straight_high = self._is_straight(ranks)
+        
+        # Check for straight flush
+        if is_flush and is_straight:
+            # Check for royal flush
+            if straight_high == 14 and set(ranks) == {10, 11, 12, 13, 14}:
+                return 9, [14]  # Royal flush
+            return 9, [straight_high]  # Straight flush
+        
+        # Check for four of a kind
+        if rank_counts[0][1] == 4:
+            four_rank = rank_counts[0][0]
+            kicker = rank_counts[1][0]
+            return 8, [four_rank, kicker]
+        
+        # Check for full house
+        if rank_counts[0][1] == 3 and rank_counts[1][1] >= 2:
+            three_rank = rank_counts[0][0]
+            pair_rank = rank_counts[1][0]
+            return 7, [three_rank, pair_rank]
+        
+        # Check for flush
+        if is_flush:
+            flush_ranks = sorted(ranks, reverse=True)[:5]
+            return 6, flush_ranks
+        
+        # Check for straight
+        if is_straight:
+            return 5, [straight_high]
+        
+        # Check for three of a kind
+        if rank_counts[0][1] == 3:
+            three_rank = rank_counts[0][0]
+            kickers = [r for r, _ in rank_counts[1:3]]
+            return 4, [three_rank] + kickers
+        
+        # Check for two pair
+        if rank_counts[0][1] == 2 and rank_counts[1][1] == 2:
+            pairs = sorted([rank_counts[0][0], rank_counts[1][0]], reverse=True)
+            kicker = rank_counts[2][0]
+            return 3, pairs + [kicker]
+        
+        # Check for one pair
+        if rank_counts[0][1] == 2:
+            pair_rank = rank_counts[0][0]
+            kickers = [r for r, _ in rank_counts[1:4]]
+            return 2, [pair_rank] + kickers
+        
+        # High card
+        high_cards = sorted(ranks, reverse=True)[:5]
+        return 1, high_cards
     
-    def compare_hands(self, hand1: List[Tuple[str, str]], hand2: List[Tuple[str, str]]) -> int:
+    def compare_hands(self, hand1: List[str], hand2: List[str]) -> int:
         """
-        Compare two poker hands and return the winner
+        Compare two poker hands.
         
-        Args:
-            hand1: First hand as list of (rank, suit) tuples
-            hand2: Second hand as list of (rank, suit) tuples
-            
         Returns:
             1 if hand1 wins, -1 if hand2 wins, 0 if tie
         """
-        rank1, tie_breakers1 = self.evaluate_hand(hand1)
-        rank2, tie_breakers2 = self.evaluate_hand(hand2)
+        rank1, tiebreakers1 = self.evaluate_hand(hand1)
+        rank2, tiebreakers2 = self.evaluate_hand(hand2)
         
         # Compare hand ranks
-        if rank1.value > rank2.value:
+        if rank1 > rank2:
             return 1
-        elif rank1.value < rank2.value:
+        elif rank1 < rank2:
             return -1
         else:
-            # Same hand rank, compare tie-breakers
-            for i in range(len(tie_breakers1)):
-                if tie_breakers1[i] > tie_breakers2[i]:
+            # Same hand rank, compare tiebreakers
+            for tb1, tb2 in zip(tiebreakers1, tiebreakers2):
+                if tb1 > tb2:
                     return 1
-                elif tie_breakers1[i] < tie_breakers2[i]:
+                elif tb1 < tb2:
                     return -1
             return 0  # Complete tie
-    
-    def _is_royal_flush(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for royal flush (A, K, Q, J, 10 of same suit)"""
-        if not self._is_flush(cards):
-            return False
-        
-        ranks = {self.rank_values[card[0]] for card in cards}
-        return ranks == {10, 11, 12, 13, 14}
-    
-    def _is_straight_flush(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for straight flush (straight of same suit)"""
-        return self._is_flush(cards) and self._is_straight(cards)
-    
-    def _is_four_of_a_kind(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for four of a kind"""
-        rank_counts = self._get_rank_counts(cards)
-        return 4 in rank_counts.values()
-    
-    def _is_full_house(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for full house (three of a kind + pair)"""
-        rank_counts = self._get_rank_counts(cards)
-        return 3 in rank_counts.values() and 2 in rank_counts.values()
-    
-    def _is_flush(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for flush (all same suit)"""
-        suits = {card[1] for card in cards}
-        return len(suits) == 1
-    
-    def _is_straight(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for straight (5 consecutive ranks)"""
-        rank_values = sorted([self.rank_values[card[0]] for card in cards])
-        
-        # Check for normal straight
-        for i in range(1, 5):
-            if rank_values[i] != rank_values[i-1] + 1:
-                # Check for wheel straight (A-2-3-4-5)
-                if set(rank_values) == {2, 3, 4, 5, 14}:
-                    return True
-                return False
-        return True
-    
-    def _is_three_of_a_kind(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for three of a kind"""
-        rank_counts = self._get_rank_counts(cards)
-        return 3 in rank_counts.values()
-    
-    def _is_two_pair(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for two pair"""
-        rank_counts = self._get_rank_counts(cards)
-        pairs = [count for count in rank_counts.values() if count == 2]
-        return len(pairs) == 2
-    
-    def _is_one_pair(self, cards: List[Tuple[str, str]]) -> bool:
-        """Check for one pair"""
-        rank_counts = self._get_rank_counts(cards)
-        pairs = [count for count in rank_counts.values() if count == 2]
-        return len(pairs) == 1
-    
-    def _get_rank_counts(self, cards: List[Tuple[str, str]]) -> Dict[int, int]:
-        """Get count of each rank in the hand"""
-        rank_counts = {}
-        for card in cards:
-            rank_val = self.rank_values[card[0]]
-            rank_counts[rank_val] = rank_counts.get(rank_val, 0) + 1
-        return rank_counts
-    
-    def _get_straight_high_card(self, cards: List[Tuple[str, str]]) -> int:
-        """Get the high card of a straight (handles wheel straight)"""
-        rank_values = sorted([self.rank_values[card[0]] for card in cards])
-        if set(rank_values) == {2, 3, 4, 5, 14}:  # Wheel straight
-            return 5
-        return max(rank_values)
-    
-    def _get_four_of_a_kind_info(self, cards: List[Tuple[str, str]]) -> Tuple[int, int]:
-        """Get four of a kind rank and kicker"""
-        rank_counts = self._get_rank_counts(cards)
-        quad_rank = [rank for rank, count in rank_counts.items() if count == 4][0]
-        kicker = [rank for rank, count in rank_counts.items() if count == 1][0]
-        return quad_rank, kicker
-    
-    def _get_full_house_info(self, cards: List[Tuple[str, str]]) -> Tuple[int, int]:
-        """Get triple rank and pair rank for full house"""
-        rank_counts = self._get_rank_counts(cards)
-        triple_rank = [rank for rank, count in rank_counts.items() if count == 3][0]
-        pair_rank = [rank for rank, count in rank_counts.items() if count == 2][0]
-        return triple_rank, pair_rank
-    
-    def _get_flush_high_cards(self, cards: List[Tuple[str, str]]) -> List[int]:
-        """Get high cards for flush (all cards in descending order)"""
-        rank_values = [self.rank_values[card[0]] for card in cards]
-        return sorted(rank_values, reverse=True)
-    
-    def _get_three_of_a_kind_info(self, cards: List[Tuple[str, str]]) -> Tuple[int, List[int]]:
-        """Get triple rank and kickers for three of a kind"""
-        rank_counts = self._get_rank_counts(cards)
-        triple_rank = [rank for rank, count in rank_counts.items() if count == 3][0]
-        kickers = sorted([rank for rank, count in rank_counts.items() if count == 1], reverse=True)
-        return triple_rank, kickers
-    
-    def _get_two_pair_info(self, cards: List[Tuple[str, str]]) -> Tuple[List[int], int]:
-        """Get pair ranks and kicker for two pair"""
-        rank_counts = self._get_rank_counts(cards)
-        pairs = sorted([rank for rank, count in rank_counts.items() if count == 2], reverse=True)
-        kicker = [rank for rank, count in rank_counts.items() if count == 1][0]
-        return pairs, kicker
-    
-    def _get_one_pair_info(self, cards: List[Tuple[str, str]]) -> Tuple[int, List[int]]:
-        """Get pair rank and kickers for one pair"""
-        rank_counts = self._get_rank_counts(cards)
-        pair_rank = [rank for rank, count in rank_counts.items() if count == 2][0]
-        kickers = sorted([rank for rank, count in rank_counts.items() if count == 1], reverse=True)
-        return pair_rank, kickers
-    
-    def _get_high_cards(self, cards: List[Tuple[str, str]]) -> List[int]:
-        """Get high cards for high card hand (all cards in descending order)"""
-        rank_values = [self.rank_values[card[0]] for card in cards]
-        return sorted(rank_values, reverse=True)
-    
-    def hand_rank_to_string(self, hand_rank: HandRank) -> str:
-        """Convert HandRank enum to human-readable string"""
-        return hand_rank.name.replace('_', ' ').title()
