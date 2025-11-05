@@ -2,28 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 from collections import Counter
 
-class AbstractHandEvaluator(ABC):
-    """Defines how poker hands are evaluated and compared."""
-    
-    @abstractmethod
-    def evaluate_hand(self, cards: List[str]) -> Tuple[int, List[int]]:
-        """
-        Given a list of cards (e.g., ['AS', 'KH', 'QC', 'JD', '10S']),
-        return a tuple (rank_value, tiebreaker_list).
-        """
-        pass
-
-    @abstractmethod
-    def compare_hands(self, hand1: List[str], hand2: List[str]) -> int:
-        """
-        Compare two hands.
-        Return:
-          1 if hand1 wins,
-          -1 if hand2 wins,
-          0 if tie.
-        """
-        pass
-
 
 class PokerHandEvaluator(AbstractHandEvaluator):
     """
