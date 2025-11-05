@@ -44,7 +44,7 @@ class AbstractHandEvaluator(ABC):
           0 if tie.
         """
         pass
-
+    
 
 #------3. Player------
 class AbstractPlayer(ABC):
@@ -95,4 +95,23 @@ class AbstractAgent(ABC):
     @abstractmethod
     def observe(self, game_state, action: str, reward: float):
         """Record feedback for learning-based agents."""
+        pass
+
+
+#------5. Game State------
+
+class AbstractGameState(ABC):
+    @abstractmethod
+    def __init__(self, players: List[AbstractPlayer]) -> None:
+        """Initialize game state with players, community cards, pot, etc."""
+        pass
+
+    @abstractmethod
+    def next_player(self):
+        """Advance to the next player's turn."""
+        pass
+
+    @abstractmethod
+    def reset_round(self):
+        """Reset values between rounds (e.g., after a showdown)."""
         pass
