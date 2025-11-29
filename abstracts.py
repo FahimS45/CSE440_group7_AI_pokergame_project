@@ -16,8 +16,11 @@ class AbstractCardSystem(ABC):
         pass
 
     @abstractmethod
-    def deal(self, num_cards: int) -> List[Tuple[str, str]]:
-        """Deal a specified number of cards from the deck"""
+    def deal(self, num_cards: int) -> List[str]:
+        """
+        Deal a specified number of cards from the deck.
+        Returns cards as strings (e.g., ['AS', 'KH', 'QC'])
+        """
         pass
 
 
