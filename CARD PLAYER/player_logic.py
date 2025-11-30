@@ -53,30 +53,30 @@ class Deck:
         self.cards = self.cards[num_cards:]
         return dealt_cards
 
-# --------- Testing Player Class ---------
-if __name__ == "__main__":
-    # Create test player
-    player1 = Player("Alice", 1000)
+# # --------- Testing Player Class ---------
+# if __name__ == "__main__":
+#     # Create test player
+#     player1 = Player("Alice", 1000)
     
-    # Give cards from placeholder Deck
-    deck = Deck()
-    player1.cards = deck.deal(2)
+#     # Give cards from placeholder Deck
+#     deck = Deck()
+#     player1.cards = deck.deal(2)
     
-    print(f"Player: {player1.name}, Chips: {player1.chips}, Cards: {player1.cards}")
+#     print(f"Player: {player1.name}, Chips: {player1.chips}, Cards: {player1.cards}")
 
-    # Test make_decision with None game_state
-    action = player1.make_decision(game_state=None)
-    print("Decision with None game_state:", action)
+#     # Test make_decision with None game_state
+#     action = player1.make_decision(game_state=None)
+#     print("Decision with None game_state:", action)
 
-    # Test make_decision with a current bet
-    game_state = {"current_bet": 50}
-    action = player1.make_decision(game_state=game_state)
-    print("Decision with current_bet=50:", action)
+#     # Test make_decision with a current bet
+#     game_state = {"current_bet": 50}
+#     action = player1.make_decision(game_state=game_state)
+#     print("Decision with current_bet=50:", action)
 
-    # Test updating chips
-    player1.update_stack(-50)
-    print(f"After betting 50 chips: {player1}")
+#     # Test updating chips
+#     player1.update_stack(-50)
+#     print(f"After betting 50 chips: {player1}")
 
-    # Test reset_hand
-    player1.reset_hand()
-    print(f"After reset: {player1}")
+#     # Test reset_hand
+#     player1.reset_hand()
+#     print(f"After reset: {player1}")
