@@ -44,23 +44,23 @@ class BettingRound:
         player.current_bet += actual_bet
         self.pot += actual_bet
 
-# --------- Test / Demo ---------
-if __name__ == "__main__":
-    # Create 3 test players
-    players = [Player("Alice", 1000), Player("Bob", 1000), Player("Charlie", 1000)]
+# # --------- Test / Demo ---------
+# if __name__ == "__main__":
+#     # Create 3 test players
+#     players = [Player("Alice", 1000), Player("Bob", 1000), Player("Charlie", 1000)]
 
-    # Show initial state
-    print("Initial Player States:")
-    for p in players:
-        print(p)
+#     # Show initial state
+#     print("Initial Player States:")
+#     for p in players:
+#         print(p)
 
-    # Run a betting round
-    betting_round = BettingRound(players)
-    betting_round.play_round()
+#     # Run a betting round
+#     betting_round = BettingRound(players)
+#     betting_round.play_round()
 
-    # Show final state
-    print("\nFinal Player States:")
-    for p in players:
-        print(p)
+#     # Show final state
+#     print("\nFinal Player States:")
+#     for p in players:
+#         print(p)
 
-    print("Total Pot:", betting_round.pot)
+#     print("Total Pot:", betting_round.pot)
