@@ -10,10 +10,10 @@ from typing import List, Tuple
 
 class Suit(Enum):
     """Card suits"""
-    HEARTS = '♥'
-    DIAMONDS = '♦'
-    CLUBS = '♣'
-    SPADES = '♠'
+    HEARTS = 'H'
+    DIAMONDS = 'D'
+    CLUBS = 'C'
+    SPADES = 'S'
 
 class Rank(Enum):
     """Card ranks with their values"""
@@ -31,9 +31,12 @@ class Rank(Enum):
     KING = (13, 'K')
     ACE = (14, 'A')
     
-    def __init__(self, value, display):
-        self.value = value
+    def __init__(self, numeric_value, display):
+        self.numeric_value = numeric_value 
         self.display = display
+
+
+
 
 class Card:
     """Represents a single playing card"""
@@ -60,6 +63,9 @@ class Card:
 # --- 3. The Concrete Implementation ---
 # This is your Deck class, "joined" with the AbstractCardSystem.
 
+
+
+
 class Deck(AbstractCardSystem):
     """
     Represents a deck of 52 playing cards.
@@ -85,21 +91,28 @@ class Deck(AbstractCardSystem):
         Shuffles the deck.
         """
         random.shuffle(self.cards)
+
+
+
     
     def deal(self, num_cards: int) -> List[Tuple[str, str]]:
         """
         Implements the abstract deal method.
         
         Deals cards from the deck.
-        Returns a list of (rank, suit) string tuples as required by the ABC.
+        Returns a list of card strings (e.g.[(AS),(KH), '10C'])
         """
+
         if num_cards > len(self.cards):
             raise ValueError(f"Cannot deal {num_cards} cards. Only {len(self.cards)} left.")
         
-        # Pop the Card objects from the deck
-        dealt_card_objects: List[Card] = []
+        # Pop the Card and convert to string format
+
+        dealt_cards = []
         for _ in range(num_cards):
-            dealt_card_objects.append(self.cards.pop())
+           card = self.cards.pop()
+           dealt_cards.append(card.to.string())
+           return dealt_cards
             
         # Convert the List[Card] to the required List[Tuple[str, str]]
         # This formatting step is the key change to match the abstract method
@@ -109,6 +122,9 @@ class Deck(AbstractCardSystem):
         ]
         
         return formatted_hand
+    
+
+    
     
     def cards_remaining(self) -> int:
         """A helper method specific to this Deck class"""
