@@ -113,17 +113,7 @@ class Deck(AbstractCardSystem):
            card = self.cards.pop()
            dealt_cards.append(card.to.string())
            return dealt_cards
-            
-        # Convert the List[Card] to the required List[Tuple[str, str]]
-        # This formatting step is the key change to match the abstract method
-        formatted_hand = [
-            (card.rank.display, card.suit.value) 
-            for card in dealt_card_objects
-        ]
         
-        return formatted_hand
-    
-
     
     
     def cards_remaining(self) -> int:
