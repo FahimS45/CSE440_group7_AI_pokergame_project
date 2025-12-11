@@ -60,11 +60,6 @@ class Card:
         """For sorting cards"""
         return self.rank.value < other.rank.value
 
-# --- 3. The Concrete Implementation ---
-# This is your Deck class, "joined" with the AbstractCardSystem.
-
-
-
 
 class Deck(AbstractCardSystem):
     """
@@ -91,8 +86,6 @@ class Deck(AbstractCardSystem):
         Shuffles the deck.
         """
         random.shuffle(self.cards)
-
-
 
     
     def deal(self, num_cards: int) -> List[str]:
