@@ -4,7 +4,7 @@ Clean implementation with List[str] throughout - no conversions needed!
 """
 
 from abstracts import AbstractGameState, AbstractPlayer
-from test_cardsystem import Deck
+from cardsystem import Deck
 from hand_evaluator import PokerHandEvaluator
 from typing import List, Tuple
 
