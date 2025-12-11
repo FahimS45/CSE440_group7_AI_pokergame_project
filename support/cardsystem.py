@@ -95,7 +95,7 @@ class Deck(AbstractCardSystem):
 
 
     
-    def deal(self, num_cards: int) -> List[Tuple[str, str]]:
+    def deal(self, num_cards: int) -> List[str]:
         """
         Implements the abstract deal method.
         
@@ -111,7 +111,7 @@ class Deck(AbstractCardSystem):
         dealt_cards = []
         for _ in range(num_cards):
            card = self.cards.pop()
-           dealt_cards.append(card.to.string())
+           dealt_cards.append(card.to_string())
            return dealt_cards
         
     
