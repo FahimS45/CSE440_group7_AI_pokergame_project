@@ -1,7 +1,7 @@
 import random
 from typing import List
-from test_hand_evaluator import PokerHandEvaluator
-from test_abstracts import AbstractPlayer
+from hand_evaluator import PokerHandEvaluator
+from abstracts import AbstractPlayer
 
 
 class MonteCarloEvaluator:
@@ -296,5 +296,5 @@ def evaluate_state_heuristic(game_state, ai_player: AbstractPlayer) -> float:
     Returns:
         Expected value in chips (higher = better for AI)
     """
-    evaluator = MonteCarloEvaluator(num_simulations=1000)
+    evaluator = MonteCarloEvaluator(num_simulations=5000)
     return evaluator.evaluate_state_heuristic(game_state, ai_player)
