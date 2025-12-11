@@ -132,51 +132,46 @@ class TexasHoldemGameState(AbstractGameState):
         return self.current_bet
     
     def apply_action(self, player: AbstractPlayer, action: str, raise_amount: int = 0):
-        """
-        Apply a player's action to the game state.
+        """Apply a player's action to game state"""
         
-        Args:
-            player: The player taking action
-            action: 'fold', 'check', 'call', 'raise'
-        """
         if action == "fold":
             player.folded = True
             self.players_acted_this_round.add(player)
-        
+
         elif action == "check":
-                    to_call = self.current_bet - player.current_bet
-                    if to_call > 0:
-                        # Auto-convert to call
-                        actual_call = min(to_call, player.chips)
-                        player.update_stack(-actual_call)
-                        player.current_bet += actual_call
-                        self.pot += actual_call
-                    self.players_acted_this_round.add(player)
+            to_call = self.current_bet - player.current_bet
+            if to_call > 0:
+                # Auto-convert to call
+                actual_call = min(to_call, player.chips)
+                player.update_stack(-actual_call)
+                player.current_bet += actual_call
+                self.pot += actual_call
+            self.players_acted_this_round.add(player)
 
-                elif action == "call":
-                    to_call = self.current_bet - player.current_bet
-                    actual_call = min(to_call, player.chips)
-                    player.update_stack(-actual_call)
-                    player.current_bet += actual_call
-                    self.pot += actual_call
-                    self.players_acted_this_round.add(player)
+        elif action == "call":
+            to_call = self.current_bet - player.current_bet
+            actual_call = min(to_call, player.chips)
+            player.update_stack(-actual_call)
+            player.current_bet += actual_call
+            self.pot += actual_call
+            self.players_acted_this_round.add(player)
 
-                elif action == "raise":
-                    if raise_amount <= self.current_bet:
-                        raise ValueError(f"Raise amount must be greater than current bet {self.current_bet}")
+        elif action == "raise":
+            if raise_amount <= self.current_bet:
+                raise ValueError(f"Raise amount must be greater than current bet {self.current_bet}")
 
-                    to_bet = raise_amount - player.current_bet
-                    actual_bet = min(to_bet, player.chips)
+            to_bet = raise_amount - player.current_bet
+            actual_bet = min(to_bet, player.chips)
 
-                    player.update_stack(-actual_bet)
-                    player.current_bet += actual_bet
-                    self.pot += actual_bet
+            player.update_stack(-actual_bet)
+            player.current_bet += actual_bet
+            self.pot += actual_bet
 
-                    self.current_bet = player.current_bet
-                    self.players_acted_this_round = set([player])
-                
-                else:
-                    raise ValueError(f"Unknown action: {action}")
+            self.current_bet = player.current_bet
+            self.players_acted_this_round = set([player])
+        
+        else:
+            raise ValueError(f"Unknown action: {action}")
     
     def next_player(self):
         """Advance to next active player"""
