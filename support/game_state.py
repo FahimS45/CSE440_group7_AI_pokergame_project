@@ -1,6 +1,6 @@
 """
 GameState implementation for Texas Hold'em poker.
-Clean implementation with List[str] throughout - no conversions needed!
+Clean implementation
 """
 
 from abstracts import AbstractGameState, AbstractPlayer
@@ -18,7 +18,7 @@ class TexasHoldemGameState(AbstractGameState):
         Initialize Texas Hold'em game state.
         
         Args:
-            players: List of players (2-10 players)
+            players: List of players 
             small_blind: Small blind amount
             big_blind: Big blind amount
         """
@@ -33,7 +33,7 @@ class TexasHoldemGameState(AbstractGameState):
         
         # Deck and cards
         self.deck = Deck()
-        self.community_cards = []  # List[str] - directly from deck
+        self.community_cards = []  
         
         # Game state tracking
         self.pot = 0
@@ -138,83 +138,87 @@ class TexasHoldemGameState(AbstractGameState):
         Args:
             player: The player taking action
             action: 'fold', 'check', 'call', 'raise'
-            raise_amount: Total amount for raise (not just the increment)
         """
         if action == "fold":
             player.folded = True
+            self.players_acted_this_round.add(player)
         
         elif action == "check":
-            # Can only check if no bet to call
-            if self.current_bet > player.current_bet:
-                raise ValueError(f"{player.name} cannot check, must call or fold")
-        
-        elif action == "call":
-            # Call the current bet
-            to_call = self.current_bet - player.current_bet
-            actual_call = min(to_call, player.chips)
-            
-            player.update_stack(-actual_call)
-            player.current_bet += actual_call
-            self.pot += actual_call
-        
-        elif action == "raise":
-            # Raise to raise_amount
-            if raise_amount <= self.current_bet:
-                raise ValueError(f"Raise amount must be greater than current bet {self.current_bet}")
-            
-            to_bet = raise_amount - player.current_bet
-            actual_bet = min(to_bet, player.chips)
-            
-            player.update_stack(-actual_bet)
-            player.current_bet += actual_bet
-            self.pot += actual_bet
-            
-            # Update current bet
-            self.current_bet = player.current_bet
-            
-            # Reset players_acted since there's a new bet
-            self.players_acted_this_round = {player}
-        
-        else:
-            raise ValueError(f"Unknown action: {action}")
-        
-        # Mark player as acted
-        self.players_acted_this_round.add(player)
+                    to_call = self.current_bet - player.current_bet
+                    if to_call > 0:
+                        # Auto-convert to call
+                        actual_call = min(to_call, player.chips)
+                        player.update_stack(-actual_call)
+                        player.current_bet += actual_call
+                        self.pot += actual_call
+                    self.players_acted_this_round.add(player)
+
+                elif action == "call":
+                    to_call = self.current_bet - player.current_bet
+                    actual_call = min(to_call, player.chips)
+                    player.update_stack(-actual_call)
+                    player.current_bet += actual_call
+                    self.pot += actual_call
+                    self.players_acted_this_round.add(player)
+
+                elif action == "raise":
+                    if raise_amount <= self.current_bet:
+                        raise ValueError(f"Raise amount must be greater than current bet {self.current_bet}")
+
+                    to_bet = raise_amount - player.current_bet
+                    actual_bet = min(to_bet, player.chips)
+
+                    player.update_stack(-actual_bet)
+                    player.current_bet += actual_bet
+                    self.pot += actual_bet
+
+                    self.current_bet = player.current_bet
+                    self.players_acted_this_round = set([player])
+                
+                else:
+                    raise ValueError(f"Unknown action: {action}")
     
     def next_player(self):
         """Advance to next active player"""
         original_index = self.current_player_index
+        attempts = 0
+        max_attempts = len(self.players) + 1
         
-        while True:
+        while attempts < max_attempts:
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
+            attempts += 1
             
-            # Don't cycle forever
-            if self.current_player_index == original_index:
+            if self.current_player_index == original_index and attempts > 1:
                 break
             
             current_player = self.players[self.current_player_index]
             
-            # Skip if folded or all-in
             if not current_player.folded and current_player.chips > 0:
                 break
-    
+        
+        if attempts >= max_attempts:
+            for p in self.players:
+                self.players_acted_this_round.add(p)
+
     def is_betting_round_complete(self) -> bool:
-        """
-        Check if betting round is complete.
-        Complete when all active players have acted and matched the current bet.
-        """
+        """Check if betting round is complete"""
         active_players = self.get_active_players()
         
-        # If only one player left, round is over
         if len(active_players) <= 1:
             return True
         
-        # Check if all active players have acted
+        players_who_can_act = [p for p in active_players if p.chips > 0]
+        
+        if len(players_who_can_act) <= 1:
+            return True
+        
         for player in active_players:
+            if player.chips == 0:
+                continue
+                
             if player not in self.players_acted_this_round:
                 return False
             
-            # Check if they've matched the bet (or are all-in)
             if player.current_bet < self.current_bet and player.chips > 0:
                 return False
         
@@ -254,27 +258,18 @@ class TexasHoldemGameState(AbstractGameState):
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
     
     def determine_winner(self) -> List[Tuple[AbstractPlayer, int]]:
-        """
-        Determine winner(s) at showdown.
-        Returns list of (player, amount_won) tuples.
-        
-        Note: This is simplified and doesn't handle side pots properly.
-        """
+        """Determine winner(s) at showdown"""
         active_players = self.get_active_players()
         
         if len(active_players) == 1:
-            # Only one player left, they win
             winner = active_players[0]
             winner.update_stack(self.pot)
             return [(winner, self.pot)]
         
-        # Evaluate all hands
         best_hand = None
         winners = []
         
         for player in active_players:
-            # Player.cards is List[str], community_cards is List[str]
-            # Perfect! No conversion needed!
             full_hand = player.cards + self.community_cards
             
             if best_hand is None:
@@ -284,14 +279,11 @@ class TexasHoldemGameState(AbstractGameState):
                 comparison = self.evaluator.compare_hands(full_hand, best_hand)
                 
                 if comparison == 1:
-                    # New winner
                     best_hand = full_hand
                     winners = [player]
                 elif comparison == 0:
-                    # Tie
                     winners.append(player)
         
-        # Split pot among winners
         pot_share = self.pot // len(winners)
         results = []
         
@@ -300,7 +292,7 @@ class TexasHoldemGameState(AbstractGameState):
             results.append((winner, pot_share))
         
         return results
-    
+        
     def get_game_state_dict(self):
         """Return game state as dictionary for player decision making"""
         return {
@@ -310,3 +302,64 @@ class TexasHoldemGameState(AbstractGameState):
             "betting_round": self.betting_round,
             "active_players": len(self.get_active_players())
         }
+    
+    def clone(self):
+        """Create deep copy for tree search"""
+        return copy.deepcopy(self)
+    
+    def is_terminal(self):
+        """Check if hand is over"""
+        active = self.get_active_players()
+        return len(active) <= 1 or self.betting_round == "showdown"
+    
+    def get_legal_actions(self, player):
+        """
+        FIXED RAISE VERSION: Only 1 raise size (pot-sized)
+        Best for deep Expectiminimax search (depth 4+)
+        
+        Actions: fold, check, call, raise (pot)
+        Branching factor: ~3-4 per node
+        """
+        actions = []
+        
+        to_call = self.current_bet - player.current_bet
+        pot = self.pot
+        
+        # FOLD
+        if to_call > 0:
+            actions.append(('fold', 0))
+        
+        # CHECK
+        if to_call == 0:
+            actions.append(('check', 0))
+        
+        # CALL
+        if to_call > 0 and player.chips > 0:
+            actions.append(('call', 0))
+        
+        # RAISE (single pot-sized bet)
+        if player.chips > to_call:
+            raise_amount = self.current_bet + max(self.big_blind, pot)
+            chips_needed = raise_amount - player.current_bet
+            
+            if chips_needed > 0 and player.chips >= chips_needed:
+                actions.append(('raise', raise_amount))
+        
+        # Safety
+        if len(actions) == 0:
+            actions.append(('check', 0))
+        
+        return actions
+    
+    def get_remaining_deck_cards(self):
+        """Return list of cards not yet dealt"""
+        all_cards = []
+        for suit in ['H', 'D', 'C', 'S']:
+            for rank in ['2','3','4','5','6','7','8','9','10','J','Q','K','A']:
+                all_cards.append(rank + suit)
+        
+        known_cards = set(self.community_cards)
+        for player in self.players:
+            known_cards.update(player.cards)
+        
+        return [c for c in all_cards if c not in known_cards]
