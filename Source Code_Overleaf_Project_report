@@ -1,0 +1,86 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+
+\begin{document}
+
+% ======= HEADER ABOVE FIRST PAGE =======
+\noindent
+\textbf{Course Code:} CSE 440  \\
+\textbf{Section:} 01  \\
+\textbf{Project Group No.:} XX \\
+\textbf{Members:} \\
+1. Most Atyea Sanjeeda Ema (2031792642) \\
+2. 2nd Author (1111111111) \\
+3. 3rd Author (2222222) \\
+4. 4th Author (333333) \\[1em]
+% =======================================
+
+
+\title{AI Poker Game}
+
+\author{
+\IEEEauthorblockN{Most Atyea Sanjeeda Ema (2031792642)}
+\IEEEauthorblockA{
+Department of Electrical and Computer Engineering\\
+North South University\\
+Dhaka, Bangladesh}
+\and
+\IEEEauthorblockN{2nd Author (1111111111)}
+\IEEEauthorblockA{
+Department of Electrical and Computer Engineering\\
+North South University\\
+Dhaka, Bangladesh}
+\and
+\IEEEauthorblockN{3rd Author (2222222)}
+\IEEEauthorblockA{
+Department of Electrical and Computer Engineering\\
+North South University\\
+Dhaka, Bangladesh}
+\and
+\IEEEauthorblockN{4th Author (333333)}
+\IEEEauthorblockA{
+Department of Electrical and Computer Engineering\\
+North South University\\
+Dhaka, Bangladesh}
+}
+
+\maketitle
+
+\begin{abstract}
+This paper presents the design and development of an Artificial Intelligence based poker game. The system incorporates decision-making strategies, probabilistic reasoning, and adaptive learning to play optimally against human or computer opponents.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Poker, AI, Game Theory, Decision Making, Reinforcement Learning
+\end{IEEEkeywords}
+
+\section{Introduction}
+Your introduction goes here.
+
+\section{Related Work}
+Discuss research papers and compare.
+
+\section{Methodology}
+Explain how the system works.
+
+\section{Implementation}
+Explain dataset/tools/language.
+
+\section{Results}
+Show evaluation, graphs, tables.
+
+\section{Conclusion}
+Write summary + future work.
+
+\begin{thebibliography}{00}
+\bibitem{ref1} Add your references here.
+\end{thebibliography}
+
+\end{document}
