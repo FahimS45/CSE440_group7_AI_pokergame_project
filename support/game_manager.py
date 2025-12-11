@@ -4,7 +4,7 @@ Direct integration without converter utility.
 """
 
 from game_state import TexasHoldemGameState
-from test_playerlogic import Player
+from player_logic import Player
 from typing import List
 
 class PokerGameManager:
