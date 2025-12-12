@@ -1,0 +1,47 @@
+\section{Literature Review}
+
+Artificial intelligence research in imperfect-information games such as poker has evolved significantly over the past two decades, driven by advances in decision-theoretic reasoning, equilibrium-based optimization, and simulation-driven evaluation. Poker is uniquely challenging because of hidden information, stochastic card dealing, bluffing, and the exponentially large game tree. As a result, traditional minimax search is insufficient, and specialized algorithms have been developed to address uncertainty and strategic reasoning.
+
+\subsection{Decision-Theoretic Search: Expectiminimax}
+Expectiminimax extends minimax by introducing chance nodes, enabling optimal reasoning in stochastic environments. Although widely applied in games like backgammon, its direct application to poker is computationally demanding due to the branching factor. Nonetheless, expectiminimax provides a structured probabilistic decision-making model and serves as the theoretical basis for search-driven poker AI approaches \cite{russell_expectiminimax}.
+
+\subsection{Equilibrium-Based Methods: CFR and Poker Solvers}
+A major breakthrough in poker AI was the introduction of Counterfactual Regret Minimization (CFR), which approximates Nash Equilibrium in large imperfect-information games \cite{zinkevich_cfr}. CFR and its variants (CFR+, MCCFR) converge efficiently and form the foundation of modern competitive poker agents.
+
+Two landmark poker AIs emerged from CFR-based advancements:
+
+\begin{itemize}
+    \item \textbf{DeepStack} — integrated deep neural networks with continual subgame re-solving to achieve expert human-level performance \cite{deepstack2017}.
+    \item \textbf{Libratus} — employed advanced abstraction, subgame solving, and post-processing refinement to defeat professional players in a 20-day competition \cite{libratus2017}.
+\end{itemize}
+
+These systems established the dominance of equilibrium computation in large-scale poker.
+
+\subsection{Monte Carlo and Probabilistic Methods}
+Monte Carlo methods (e.g., Monte Carlo Tree Search and probabilistic hand simulation) are extensively used in imperfect-information games. They evaluate decisions by sampling possible future deals and estimating expected outcomes, making them suitable for poker’s uncertainty-heavy structure \cite{mcts_poker}.  
+
+Earlier foundational work by Billings et al. showed that probabilistic reasoning combined with simulation significantly improves decision quality in poker agents, particularly in estimating hand strength and modeling hidden information \cite{probabilistic_poker}.
+
+\subsection{Frameworks for Poker Agent Development}
+General methodologies and architectures for designing competitive poker agents have been surveyed in \cite{poker_tools}, emphasizing:
+
+\begin{itemize}
+    \item hand-strength evaluation metrics,
+    \item opponent modeling,
+    \item abstraction and state representation,
+    \item integration of simulation with decision-making.
+\end{itemize}
+
+These frameworks influence how modern poker AIs are constructed and guided the design principles of this project.
+
+\subsection{Positioning of This Work}
+Most state-of-the-art poker solvers rely on large-scale CFR computation or deep neural models requiring significant computational cost. In contrast, this project focuses on a lightweight, interpretable hybrid system combining:
+
+\begin{itemize}
+    \item Expectiminimax search,
+    \item Monte Carlo-based hand strength evaluation,
+    \item A modular Texas Hold’em environment supporting AI, deterministic bots, and human players.
+\end{itemize}
+
+This contribution sits between classical game-tree search methods and modern equilibrium solvers, offering a simplified yet strategically meaningful poker AI agent suitable for academic environments and constrained computational resources.
+
