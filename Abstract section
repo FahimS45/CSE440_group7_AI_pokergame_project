@@ -1,0 +1,8 @@
+\begin{abstract}
+Poker is a difficult imperfect-information game that necessitates reasoning under ambiguity, strategic decision-making, and adapting to opponents' behaviours.  
+This study describes the creation of a strategic AI agent for Texas Hold'em that uses the Expectiminimax search algorithm and Monte Carlo simulation to assess hand strength.
+The proposed system supports a variety of gameplay scenarios, including AI vs deterministic rule-based opponents, AI versus AI, and AI versus human players.
+In stochastic and partially observable contexts, the AI performs well by integrating decision-theoretic search and probabilistic evaluation.
+The modular architecture and hybrid approach give a lightweight, interpretable framework that is appropriate for game-theoretic AI research and academia. 
+Performance measures like as win rates, decision distribution, and calculation time are assessed to ensure the system's effectiveness.
+\end{abstract}
