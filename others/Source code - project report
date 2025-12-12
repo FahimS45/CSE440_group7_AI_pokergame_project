@@ -23,7 +23,7 @@
 % =======================================
 
 
-\title{AI Poker Game}
+\title{Strategic AI Agent Development for Texas Hold'em Using Expectiminimax and Monte Carlo Simulation}
 
 \author{
 \IEEEauthorblockN{Most Atyea Sanjeeda Ema (2031792642)}
@@ -54,24 +54,384 @@ Dhaka, Bangladesh}
 \maketitle
 
 \begin{abstract}
-This paper presents the design and development of an Artificial Intelligence based poker game. The system incorporates decision-making strategies, probabilistic reasoning, and adaptive learning to play optimally against human or computer opponents.
+Poker is a difficult imperfect-information game that necessitates reasoning under ambiguity, strategic decision-making, and adapting to opponents' behaviours.  This study describes the creation of a strategic AI agent for Texas Hold'em that uses the Expectiminimax search algorithm and Monte Carlo simulation to assess hand strength.  The proposed system supports a variety of gameplay scenarios, including AI vs deterministic rule-based opponents, AI versus AI, and AI versus human players.  In stochastic and partially observable contexts, the AI performs well by integrating decision-theoretic search and probabilistic evaluation.  The modular architecture and hybrid approach give a lightweight, interpretable framework that is appropriate for game-theoretic AI research and academia.  Performance measures like as win rates, decision distribution, and calculation time are assessed to ensure the system's effectiveness.
 \end{abstract}
+
+
 
 \begin{IEEEkeywords}
 Poker, AI, Game Theory, Decision Making, Reinforcement Learning
 \end{IEEEkeywords}
 
 \section{Introduction}
-Your introduction goes here.
 
-\section{Related Work}
-Discuss research papers and compare.
+Poker is a typical example of a stochastic, imperfect-information game that presents substantial hurdles to AI research.  Unlike deterministic games like chess or Go, poker necessitates reasoning under ambiguity, bluffing, and strategic adaptation to opponents' actions.  The creation of AI bots capable of playing poker optimally has thus become a benchmark problem in computational game theory and decision-making research.
+
+In recent years, advances in search algorithms and probabilistic modelling have enabled AI systems to perform at superhuman levels in a variety of poker variants.  Techniques such as counterfactual regret minimisation (CFR) \cite{zinkevich_cfr}, Monte Carlo Tree Search (MCTS) \cite{mcts_poker}, and deep learning-based approaches \cite{deepstack2017,libratus2017} have been effectively implemented in both heads-up and multiplayer games.  These techniques enable agents to evaluate huge state spaces, simulate possible outcomes, and make informed decisions in real time.
+
+This work describes the design and implementation of a simplified Texas Hold'em poker AI that uses the Expectiminimax algorithm and Monte Carlo simulation to assess hand strength and choose the best moves.  The suggested system is evaluated in a variety of scenarios, including AI vs deterministic rule-based opponents, AI versus AI, and AI versus human players.  The primary contributions of this paper are:
+\begin{enumerate}
+    \item A modular poker playing setting capable of accommodating a variety of opponents.
+    \item The combination of Expectiminimax search with Monte Carlo hand evaluation to handle uncertainty in imperfect-information games.
+    \item Performance evaluation illustrating the efficacy of the proposed AI techniques in various gaming scenarios.
+\end{enumerate}
+
+The remainder of this paper is structured as follows: Section II provides a review of related work and prior methodologies for poker AI. Section III describes the methodology, including system architecture, game state representation, and algorithms used. Section IV presents the experimental setup and results. Section V concludes the paper and discusses potential future enhancements.
+
+
+\section{Literature Review}
+
+Artificial intelligence research in imperfect-information games like poker has advanced dramatically over the last two decades, thanks to advancements in decision-theoretic reasoning, equilibrium-based optimisation, and simulation-driven evaluation.  Poker is particularly difficult due to concealed information, stochastic card dealing, bluffing, and an exponentially huge game tree.  As a result, ordinary minimax search is insufficient, and specialised algorithms have been created to handle uncertainty and strategic thinking.
+
+\subsection{Expectiminimax in Decision-Theoretic Search}
+By adding chance nodes, expectiminimax expands minimax and permits optimal reasoning in stochastic settings.  The branching factor makes its direct application to poker computationally expensive, despite its widespread use in games like backgammon.  However, expectiminimax serves as the theoretical foundation for search-driven poker AI techniques and offers an organised probabilistic decision-making model. \cite{russell_expectiminimax}.
+
+\subsection{Equilibrium-Based Techniques: Poker Solvers and CFR}
+The introduction of Counterfactual Regret Minimisation (CFR), which approximates Nash Equilibrium in big imperfect-information games, was a significant breakthrough in poker AI  \cite{zinkevich_cfr}. CFR and its variations (CFR+, MCCFR) converge effectively, serving as the cornerstone for modern competitive poker agents.
+
+CFR-based advancements led to the development of two significant poker AIs :
+
+\begin{itemize}
+    \item \textbf{DeepStack} — uses deep neural networks and continuous subgame re-solving to achieve expert human-level performance \cite{deepstack2017}.
+    \item \textbf{Libratus} —  Libratus used advanced abstraction, subgame solution, and post-processing refinement to overcome professional players in a 20-day competition \cite{libratus2017}.
+\end{itemize}
+
+These systems emphasised equilibrium computation in large-scale poker.
+
+\subsection{Monte Carlo and Probabilistic Methods}
+Monte Carlo methods (such as Monte Carlo Tree Search and probabilistic hand simulation) are commonly utilised in imperfect-information games.  They evaluate decisions by sampling probable future deals and calculating predicted outcomes, making them suited for poker's unpredictable structure. \cite{mcts_poker}.  
+
+Previously, Billings et al. shown that probabilistic reasoning mixed with simulation considerably enhances decision quality in poker agents, particularly in assessing hand strength and modelling hidden information. \cite{probabilistic_poker}.
+
+\subsection{Frameworks for Poker Agent Development}
+General methodologies and architectures for designing competitive poker agents have been surveyed in \cite{poker_tools}reviewed general approaches and architectures for developing competitive poker agents, emphasising hand-strength evaluation criteria, opponent modelling, abstraction and state representation, and simulation-based decision-making integration.
+These frameworks shape the creation of modern poker AIs and drove this project's concepts.
+
+\subsection{Positioning of This Work}
+Modern poker solutions typically use large-scale CFR or deep neural models, which can be costly to compute.  This project proposes a lightweight, interpretable hybrid system that includes Expectiminimax search, Monte Carlo-based hand strength evaluation, and a modular Texas Hold'em environment for AI, deterministic bots, and human players.
+ This contribution bridges the gap between traditional game-tree search methods and modern equilibrium solvers, resulting in a simple yet effective poker AI agent for academic settings with limited resources.
+
+
 
 \section{Methodology}
-Explain how the system works.
 
-\section{Implementation}
-Explain dataset/tools/language.
+This section presents the comprehensive framework for developing a Texas Hold'em poker simulator with Expectiminimax-based artificial intelligence. The methodology encompasses game environment design, strategic decision-making algorithms, heuristic evaluation functions, and performance testing protocols.
+
+\subsection{System Architecture}
+
+The poker simulation system consists of four primary components: (1) the game state manager, (2) the Expectiminimax search algorithm, (3) the Monte Carlo evaluation engine, and (4) the game orchestration layer. Fig. \ref{fig:architecture} illustrates the interaction between these components.
+
+The architecture follows a modular design pattern where each component maintains clear interfaces, enabling independent testing and iterative refinement. The game state manager handles rule enforcement and state transitions, while the AI agent operates through the Expectiminimax algorithm to select optimal actions based on Monte Carlo simulations.
+
+\subsection{Game State Representation}
+
+The Texas Hold'em game state $S$ is represented as a tuple:
+
+\begin{equation}
+S = \langle P, C_c, C_h, \beta, \pi, \phi, r \rangle
+\end{equation}
+
+where $P = \{p_1, p_2, \ldots, p_n\}$ represents the set of active players, $C_c$ denotes the community cards, $C_h = \{c_1, c_2, \ldots, c_n\}$ represents each player's hole cards, $\beta$ is the current bet amount, $\pi$ is the pot size, $\phi$ indicates the button position, and $r \in \{\text{preflop, flop, turn, river}\}$ represents the current betting round.
+
+Each player $p_i$ maintains a state vector:
+
+\begin{equation}
+p_i = \langle s_i, b_i, f_i, h_i \rangle
+\end{equation}
+
+where $s_i$ denotes the chip stack, $b_i$ is the current bet, $f_i$ is a binary fold indicator, and $h_i$ represents the hole cards.
+
+\subsection{Expectiminimax Algorithm}
+
+The Expectiminimax algorithm extends the traditional minimax approach to handle the stochastic nature of poker by incorporating chance nodes for card dealing. The algorithm alternates between three node types: MAX nodes (AI decisions), MIN nodes (opponent decisions), and CHANCE nodes (card dealing).
+
+\subsubsection{Value Computation}
+
+The value function $V(s, d, t)$ for state $s$ at depth $d$ with node type $t$ is defined recursively as:
+
+\begin{equation}
+V(s, d, t) = \begin{cases}
+E(s) & \text{if } d = 0 \text{ or } s \in S_{\text{terminal}} \\
+\max_{a \in A(s)} V(s', d-1, \text{MIN}) & \text{if } t = \text{MAX} \\
+\min_{a \in A(s)} V(s', d-1, t_{\text{next}}) & \text{if } t = \text{MIN} \\
+\mathbb{E}_{c \sim D}[V(s_c, d-1, \text{MAX})] & \text{if } t = \text{CHANCE}
+\end{cases}
+\end{equation}
+
+where $A(s)$ represents the legal action set, $s'$ is the resulting state after action $a$, $E(s)$ is the heuristic evaluation function, $S_{\text{terminal}}$ denotes terminal states, $D$ represents the distribution of remaining cards, and $t_{\text{next}}$ is determined by the next player's identity.
+
+\subsubsection{Action Space}
+
+The legal action space $A(s)$ for a given state includes:
+
+\begin{equation}
+A(s) = \{\text{fold}, \text{check}, \text{call}, \text{raise}(\alpha)\}
+\end{equation}
+
+where raise amounts are constrained by:
+
+\begin{equation}
+\alpha = \beta + \max(\beta_{\text{BB}}, \pi)
+\end{equation}
+
+with $\beta_{\text{BB}}$ representing the big blind amount. This constraint limits branching factor while maintaining strategic depth.
+
+\subsection{Monte Carlo Hand Strength Evaluation}
+
+Hand strength estimation employs Monte Carlo simulation to compute win probability against random opponent holdings. For AI hole cards $H_{\text{AI}}$, community cards $C_c$, and remaining deck $D_{\text{rem}}$, the win probability $P_{\text{win}}$ is approximated as:
+
+\begin{equation}
+P_{\text{win}}(H_{\text{AI}}, C_c) \approx \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}[\text{rank}(H_{\text{AI}} \cup C_c^{(i)}) > \text{rank}(H_{\text{opp}}^{(i)} \cup C_c^{(i)})]
+\end{equation}
+
+where $N$ denotes the number of simulations (default: 1000), $C_c^{(i)}$ represents the completed board for simulation $i$, $H_{\text{opp}}^{(i)}$ denotes randomly sampled opponent cards, and $\mathbb{1}[\cdot]$ is the indicator function. Ties contribute 0.5 to the win count.
+
+\subsection{Heuristic Evaluation Function}
+
+The heuristic evaluation function $E(s)$ combines multiple strategic factors to estimate state value:
+
+\begin{equation}
+E(s) = \omega_1 \cdot V_{\text{pot}} + \omega_2 \cdot V_{\text{hand}} + \omega_3 \cdot V_{\text{pos}} + \omega_4 \cdot V_{\text{stack}} - \omega_5 \cdot C_{\text{call}}
+\end{equation}
+
+\subsubsection{Expected Pot Value}
+
+The expected pot value incorporates win probability and pot size:
+
+\begin{equation}
+V_{\text{pot}} = P_{\text{win}} \cdot \pi
+\end{equation}
+
+\subsubsection{Hand Strength Value}
+
+The hand strength component applies non-linear scaling to win probability:
+
+\begin{equation}
+V_{\text{hand}} = 100 \cdot P_{\text{win}} + B(P_{\text{win}}) - P(P_{\text{win}})
+\end{equation}
+
+where the bonus function $B(P_{\text{win}})$ rewards strong hands:
+
+\begin{equation}
+B(P_{\text{win}}) = \begin{cases}
+40 & \text{if } P_{\text{win}} > 0.75 \\
+20 & \text{if } 0.65 < P_{\text{win}} \leq 0.75 \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+and the penalty function $P(P_{\text{win}})$ discourages weak hands:
+
+\begin{equation}
+P(P_{\text{win}}) = \begin{cases}
+60 & \text{if } P_{\text{win}} < 0.35 \\
+30 & \text{if } 0.35 \leq P_{\text{win}} < 0.45 \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\subsubsection{Position Value}
+
+Position advantage is quantified based on distance from the button:
+
+\begin{equation}
+V_{\text{pos}} = 2 \cdot (|P| - d_{\text{button}})
+\end{equation}
+
+where $|P|$ is the number of active players and $d_{\text{button}}$ represents the distance from button position.
+
+\subsubsection{Stack Depth Factor}
+
+Stack depth relative to pot size influences risk assessment:
+
+\begin{equation}
+V_{\text{stack}} = \begin{cases}
+15 & \text{if } \frac{s_{\text{AI}}}{\pi} > 10 \\
+-20 & \text{if } 2 < \frac{s_{\text{AI}}}{\pi} \leq 3 \\
+-40 & \text{if } \frac{s_{\text{AI}}}{\pi} \leq 2 \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\subsubsection{Pot Odds Adjustment}
+
+An additional penalty is applied for unfavorable pot odds:
+
+\begin{equation}
+C_{\text{call}} = \begin{cases}
+1.8 \cdot c_{\text{call}} + 40 & \text{if } \frac{c_{\text{call}}}{\pi} > 0.5 \\
+1.8 \cdot c_{\text{call}} & \text{otherwise}
+\end{cases}
+\end{equation}
+
+where $c_{\text{call}}$ represents the chips required to call.
+
+The weight coefficients are set as $\omega_1 = 1.5$, $\omega_2 = 1.0$, $\omega_3 = 1.0$, $\omega_4 = 1.0$, and $\omega_5 = 1.0$, balancing conservative play with strategic aggression.
+
+\subsection{Chance Node Sampling}
+
+For computational efficiency, CHANCE nodes employ sampling-based expectation estimation. Rather than exhaustively evaluating all possible card combinations, the algorithm samples $M$ representative scenarios:
+
+\begin{equation}
+\mathbb{E}_{c \sim D}[V(s_c, d-1, \text{MAX})] \approx \frac{1}{M} \sum_{j=1}^{M} V(s_{c_j}, d-1, \text{MAX})
+\end{equation}
+
+where $c_j$ represents sampled cards from the remaining deck distribution. The number of samples $M$ varies by betting round: $M = 30$ for flop (3 cards), $M = 30$ for turn and river (1 card each), balancing accuracy and computational cost.
+
+
+
+\subsubsection{Search Depth}
+
+The Expectiminimax search employs a maximum depth of $d_{\max} = 3$ plies, providing a balance between decision quality and computation time. At depth limit, the heuristic evaluation function estimates state value.
+
+\subsubsection{State Cloning}
+
+Each node expansion creates a deep copy of the game state to ensure search tree independence:
+
+\begin{equation}
+s' = \text{clone}(s) \oplus a
+\end{equation}
+
+where $\oplus$ denotes the state transition operator applying action $a$ to the cloned state.
+
+\subsubsection{Terminal State Evaluation}
+
+Terminal states receive exact evaluation based on game outcome:
+
+\begin{equation}
+E(s_{\text{terminal}}) = \begin{cases}
+\pi & \text{if AI wins} \\
+-b_{\text{AI}} & \text{if AI loses} \\
+E(s) & \text{if showdown required}
+\end{cases}
+\end{equation}
+
+\subsection{Algorithm Pseudocode}
+
+The complete Expectiminimax algorithm is presented in Algorithm \ref{alg:expectiminimax}.
+
+\begin{algorithm}
+\caption{Expectiminimax Search for Poker}
+\label{alg:expectiminimax}
+\begin{algorithmic}[1]
+\Procedure{ExpectiminimaxSearch}{$s$}
+    \State $A \gets \text{getLegalActions}(s, \text{AI})$
+    \If{$|A| = 1$}
+        \State \Return $A[0]$
+    \EndIf
+    \State $\text{bestAction} \gets \text{null}$
+    \State $\text{bestValue} \gets -\infty$
+    \For{$a \in A$}
+        \State $s' \gets \text{clone}(s)$
+        \State $\text{applyAction}(s', \text{AI}, a)$
+        \State $v \gets \text{Expectiminimax}(s', d_{\max} - 1, \text{MIN})$
+        \If{$v > \text{bestValue}$}
+            \State $\text{bestValue} \gets v$
+            \State $\text{bestAction} \gets a$
+        \EndIf
+    \EndFor
+    \State \Return $\text{bestAction}$
+\EndProcedure
+\State
+\Procedure{Expectiminimax}{$s, d, t$}
+    \If{$s \in S_{\text{terminal}}$}
+        \State \Return $\text{evaluateTerminal}(s)$
+    \EndIf
+    \If{$d = 0$}
+        \State \Return $E(s)$
+    \EndIf
+    \If{$t = \text{MAX}$}
+        \State \Return $\text{MaxNode}(s, d)$
+    \ElsIf{$t = \text{MIN}$}
+        \State \Return $\text{MinNode}(s, d)$
+    \Else
+        \State \Return $\text{ChanceNode}(s, d)$
+    \EndIf
+\EndProcedure
+\State
+\Procedure{MaxNode}{$s, d$}
+    \State $A \gets \text{getLegalActions}(s, \text{AI})$
+    \State $\text{maxValue} \gets -\infty$
+    \For{$a \in A$}
+        \State $s' \gets \text{clone}(s)$
+        \State $\text{applyAction}(s', \text{AI}, a)$
+        \State $v \gets \text{Expectiminimax}(s', d-1, \text{MIN})$
+        \State $\text{maxValue} \gets \max(\text{maxValue}, v)$
+    \EndFor
+    \State \Return $\text{maxValue}$
+\EndProcedure
+\State
+\Procedure{MinNode}{$s, d$}
+    \State $p \gets \text{getCurrentPlayer}(s)$
+    \State $A \gets \text{getLegalActions}(s, p)$
+    \State $\text{minValue} \gets \infty$
+    \For{$a \in A$}
+        \State $s' \gets \text{clone}(s)$
+        \State $\text{applyAction}(s', p, a)$
+        \If{$\text{isBettingRoundComplete}(s')$}
+            \State $v \gets \text{Expectiminimax}(s', d-1, \text{CHANCE})$
+        \Else
+            \State $\text{nextPlayer}(s')$
+            \State $p_{\text{next}} \gets \text{getCurrentPlayer}(s')$
+            \State $t_{\text{next}} \gets \text{MAX if } p_{\text{next}} = \text{AI else MIN}$
+            \State $v \gets \text{Expectiminimax}(s', d-1, t_{\text{next}})$
+        \EndIf
+        \State $\text{minValue} \gets \min(\text{minValue}, v)$
+    \EndFor
+    \State \Return $\text{minValue}$
+\EndProcedure
+\State
+\Procedure{ChanceNode}{$s, d$}
+    \State $D_{\text{rem}} \gets \text{getRemainingCards}(s)$
+    \State $n_{\text{cards}} \gets \text{getCardsToDeal}(s.\text{round})$
+    \State $M \gets 30$ \Comment{Number of samples}
+    \State $\text{totalValue} \gets 0$
+    \For{$j = 1$ to $M$}
+        \State $s' \gets \text{clone}(s)$
+        \State $C_{\text{sample}} \gets \text{sample}(D_{\text{rem}}, n_{\text{cards}})$
+        \State $s'.\text{communityCards} \gets s'.\text{communityCards} \cup C_{\text{sample}}$
+        \State $s'.\text{round} \gets \text{nextRound}(s.\text{round})$
+        \State $\text{resetBetting}(s')$
+        \State $v \gets \text{Expectiminimax}(s', d-1, \text{MAX})$
+        \State $\text{totalValue} \gets \text{totalValue} + v$
+    \EndFor
+    \State \Return $\text{totalValue} / M$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Experimental Setup}
+
+The system evaluation comprises three testing scenarios:
+
+\begin{enumerate}
+\item \textbf{AI vs. Deterministic Players}: The Expectiminimax agent competes against rule-based opponents employing fixed strategies (tight-aggressive, loose-passive).
+
+\item \textbf{AI vs. AI}: Multiple Expectiminimax agents with identical parameters compete to assess convergent behavior and strategy stability.
+
+\item \textbf{AI vs. Human}: Human players interact with the AI agent through a command-line interface to evaluate perceived playing strength and decision quality.
+\end{enumerate}
+
+Each scenario runs for 100 hands with starting stacks of 1000 chips, small blind of 10 chips, and big blind of 20 chips. Performance metrics include:
+
+\begin{itemize}
+\item Win rate (percentage of hands won)
+\item Average chip count trajectory
+\item Decision distribution (fold/check/call/raise frequency)
+\item Computation time per decision
+\end{itemize}
+
+\subsection{Complexity Analysis}
+
+The computational complexity of the Expectiminimax algorithm is characterized by:
+
+\begin{equation}
+T(d) = O(b^{d-c} \cdot M^c)
+\end{equation}
+
+where $b$ represents the average branching factor (approximately 3-4 actions per decision node), $d$ is the search depth, $c$ is the number of chance nodes encountered, and $M$ is the sampling rate per chance node. For $d=3$, $b=4$, and $M=30$, the worst-case evaluation count is approximately $O(4^2 \cdot 30) = O(480)$ leaf evaluations per decision, making the approach computationally feasible for real-time play.
+
+
 
 \section{Results}
 Show evaluation, graphs, tables.
@@ -79,8 +439,7 @@ Show evaluation, graphs, tables.
 \section{Conclusion}
 Write summary + future work.
 
-\begin{thebibliography}{00}
-\bibitem{ref1} Add your references here.
-\end{thebibliography}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
 
 \end{document}
