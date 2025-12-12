@@ -1,0 +1,6 @@
+Opponent,Win_Rate,Profit,ROI,Hands_Played,Hands_Won,Hands_Lost,Avg_Decision_Time,Total_Decisions
+Calling Station,80.0%,710,71.0%,10,8,2,2.515s,40
+Aggressive Player,60.0%,-170,-17.0%,10,6,4,2.626s,40
+Tight Player,60.0%,60,6.0%,10,6,4,2.666s,40
+Random Player,50.0%,-530,-53.0%,10,5,5,2.673s,40
+Passive Player,30.0%,-740,-74.0%,10,3,7,3.019s,40
