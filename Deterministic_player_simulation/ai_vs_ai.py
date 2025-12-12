@@ -9,7 +9,7 @@ from Deterministic_player_simulation.game_state import TexasHoldemGameState
 import time
 
 
-class ai_vs_ai_demo:
+class ai_vs_ai:
     """
     Demo class for AI vs AI poker matches
     """
@@ -349,7 +349,7 @@ def main():
     print("This may take a few minutes. Please wait...\n")
     
     # Create and run the demo
-    demo = ai_vs_ai_demo(
+    demo = ai_vs_ai(
         starting_chips=1000,
         small_blind=10,
         big_blind=20
