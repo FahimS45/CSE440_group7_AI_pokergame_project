@@ -1,0 +1,14 @@
+\section{Introduction}
+
+Poker is a typical example of a stochastic, imperfect-information game that presents substantial hurdles to AI research.  Unlike deterministic games like chess or Go, poker necessitates reasoning under ambiguity, bluffing, and strategic adaptation to opponents' actions.  The creation of AI bots capable of playing poker optimally has thus become a benchmark problem in computational game theory and decision-making research.
+
+In recent years, advances in search algorithms and probabilistic modelling have enabled AI systems to perform at superhuman levels in a variety of poker variants.  Techniques such as counterfactual regret minimisation (CFR) \cite{zinkevich_cfr}, Monte Carlo Tree Search (MCTS) \cite{mcts_poker}, and deep learning-based approaches \cite{deepstack2017,libratus2017} have been effectively implemented in both heads-up and multiplayer games.  These techniques enable agents to evaluate huge state spaces, simulate possible outcomes, and make informed decisions in real time.
+
+This work describes the design and implementation of a simplified Texas Hold'em poker AI that uses the Expectiminimax algorithm and Monte Carlo simulation to assess hand strength and choose the best moves.  The suggested system is evaluated in a variety of scenarios, including AI vs deterministic rule-based opponents, AI versus AI, and AI versus human players.  The primary contributions of this paper are:
+\begin{enumerate}
+    \item A modular poker playing setting capable of accommodating a variety of opponents.
+    \item The combination of Expectiminimax search with Monte Carlo hand evaluation to handle uncertainty in imperfect-information games.
+    \item Performance evaluation illustrating the efficacy of the proposed AI techniques in various gaming scenarios.
+\end{enumerate}
+
+The remainder of this paper is structured as follows: Section II provides a review of related work and prior methodologies for poker AI. Section III describes the methodology, including system architecture, game state representation, and algorithms used. Section IV presents the experimental setup and results. Section V concludes the paper and discusses potential future enhancements.
