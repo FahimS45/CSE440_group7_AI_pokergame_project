@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from test_abstracts import AbstractHandEvaluator
+from Deterministic_player_simulation.abstracts import AbstractHandEvaluator
 
 class PokerHandEvaluator(AbstractHandEvaluator):
     """

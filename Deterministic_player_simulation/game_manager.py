@@ -4,9 +4,9 @@ FIXED: Uses ExpectiminimaxAgent and Player correctly.
 """
 
 # Minimal change: Adjusted imports to match your project's 'test_' structure
-from test_game_state import TexasHoldemGameState
-from test_expectiminimax import ExpectiminimaxAgent
-from test_playerlogic import Player # Assumed location for Player class
+from Deterministic_player_simulation.game_state import TexasHoldemGameState
+from Deterministic_player_simulation.expectiminimax import ExpectiminimaxAgent
+from playerlogic import Player # Assumed location for Player class
 from typing import List
 
 class PokerGameManager:

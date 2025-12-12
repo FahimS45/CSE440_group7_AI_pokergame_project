@@ -7,7 +7,7 @@ import time
 import json
 from datetime import datetime
 from typing import List, Dict, Type
-from test_game_manager import PokerGameManager
+from Deterministic_player_simulation.game_manager import PokerGameManager
 from opponent_variants import (
     CallingStationPlayer,
     AggressivePlayer,
@@ -15,7 +15,7 @@ from opponent_variants import (
     RandomPlayer,
     PassivePlayer
 )
-from test_abstracts import AbstractPlayer
+from Deterministic_player_simulation.abstracts import AbstractPlayer
 
 
 class ExperimentMetrics:

@@ -3,9 +3,9 @@ AI vs AI Poker Demo
 Two Expectiminimax agents competing against each other
 """
 
-from test_game_manager import PokerGameManager
-from test_expectiminimax import ExpectiminimaxAgent
-from test_game_state import TexasHoldemGameState
+from Deterministic_player_simulation.game_manager import PokerGameManager
+from Deterministic_player_simulation.expectiminimax import ExpectiminimaxAgent
+from Deterministic_player_simulation.game_state import TexasHoldemGameState
 import time
 
 

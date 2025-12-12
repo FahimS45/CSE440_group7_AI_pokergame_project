@@ -1,5 +1,5 @@
 # player_logic.py
-from test_abstracts import AbstractPlayer
+from Deterministic_player_simulation.abstracts import AbstractPlayer
 
 # --------- Player Class Implementation ---------
 class Player(AbstractPlayer):

@@ -7,9 +7,9 @@ import copy # Minimal change: Added import for clone() method
 from typing import List, Tuple
 
 # Minimal change: Adjusted imports to match your project's 'test_' structure
-from test_abstracts import AbstractGameState, AbstractPlayer
-from test_cardsystem import Deck # Assumed location for Deck class
-from test_hand_evaluator import PokerHandEvaluator # Assuming PokerHandEvaluator is in hand_evaluator.py (or test_hand_evaluator.py)
+from Deterministic_player_simulation.abstracts import AbstractGameState, AbstractPlayer
+from Deterministic_player_simulation.cardsystem import Deck # Assumed location for Deck class
+from Deterministic_player_simulation.hand_evaluator import PokerHandEvaluator # Assuming PokerHandEvaluator is in hand_evaluator.py (or test_hand_evaluator.py)
 
 class TexasHoldemGameState(AbstractGameState):
     """

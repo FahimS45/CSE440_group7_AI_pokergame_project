@@ -3,7 +3,7 @@ Different opponent player types for testing AI performance.
 FIXED: Non-AI players can now return tuples for raises
 """
 
-from test_abstracts import AbstractPlayer
+from Deterministic_player_simulation.abstracts import AbstractPlayer
 import random
 
 

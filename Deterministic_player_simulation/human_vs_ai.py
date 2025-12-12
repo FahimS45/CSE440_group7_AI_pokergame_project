@@ -4,9 +4,9 @@ Human vs AI Texas Hold'em Poker
 ✅ Shows: Flop, Turn, River, Current Bet, Pot
 """
 
-from test_game_state import TexasHoldemGameState
-from test_expectiminimax import ExpectiminimaxAgent
-from test_abstracts import AbstractPlayer
+from Deterministic_player_simulation.game_state import TexasHoldemGameState
+from Deterministic_player_simulation.expectiminimax import ExpectiminimaxAgent
+from Deterministic_player_simulation.abstracts import AbstractPlayer
 
 
 class HumanPlayer(AbstractPlayer):

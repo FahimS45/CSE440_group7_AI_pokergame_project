@@ -1,4 +1,4 @@
-from test_abstracts import AbstractCardSystem
+from Deterministic_player_simulation.abstracts import AbstractCardSystem
 
 import random
 from enum import Enum

@@ -4,8 +4,8 @@ No debug prints, returns tuple (action, amount)
 """
 
 import random
-from test_abstracts import AbstractAgent
-from test_monte_carlo import evaluate_state_heuristic
+from Deterministic_player_simulation.abstracts import AbstractAgent
+from Deterministic_player_simulation.monte_carlo import evaluate_state_heuristic
 from typing import Tuple
 
 

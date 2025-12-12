@@ -5,8 +5,8 @@ BALANCED: Conservative heuristics that encourage strategic play
 
 import random
 from typing import List
-from test_hand_evaluator import PokerHandEvaluator
-from test_abstracts import AbstractPlayer
+from Deterministic_player_simulation.hand_evaluator import PokerHandEvaluator
+from Deterministic_player_simulation.abstracts import AbstractPlayer
 
 
 class MonteCarloEvaluator:
