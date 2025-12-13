@@ -1,12 +1,14 @@
 """
 GameState implementation for Texas Hold'em poker.
-Clean implementation
 """
 
-from abstracts import AbstractGameState, AbstractPlayer
-from cardsystem import Deck
-from hand_evaluator import PokerHandEvaluator
+import copy # Minimal change: Added import for clone() method
 from typing import List, Tuple
+
+# Minimal change: Adjusted imports to match your project's 'test_' structure
+from abstracts import AbstractGameState, AbstractPlayer
+from cardsystem import Deck # Assumed location for Deck class
+from hand_evaluator import PokerHandEvaluator # Assuming PokerHandEvaluator is in hand_evaluator.py (or test_hand_evaluator.py)
 
 class TexasHoldemGameState(AbstractGameState):
     """
@@ -14,14 +16,6 @@ class TexasHoldemGameState(AbstractGameState):
     """
     
     def __init__(self, players: List[AbstractPlayer], small_blind: int = 10, big_blind: int = 20):
-        """
-        Initialize Texas Hold'em game state.
-        
-        Args:
-            players: List of players 
-            small_blind: Small blind amount
-            big_blind: Big blind amount
-        """
         if len(players) < 2:
             raise ValueError("Need at least 2 players")
         if len(players) > 10:
@@ -31,53 +25,36 @@ class TexasHoldemGameState(AbstractGameState):
         self.small_blind = small_blind
         self.big_blind = big_blind
         
-        # Deck and cards
         self.deck = Deck()
-        self.community_cards = []  
+        self.community_cards = []
         
-        # Game state tracking
         self.pot = 0
         self.current_bet = 0
-        self.button_position = 0  # Dealer button
+        self.button_position = 0
         self.current_player_index = 0
         
-        # Betting round tracking
-        self.betting_round = "preflop"  # preflop, flop, turn, river, showdown
-        self.players_acted_this_round = set()  # Track who has acted
+        self.betting_round = "preflop"
+        self.players_acted_this_round = set()
         
-        # Hand evaluator
         self.evaluator = PokerHandEvaluator()
         
-        # Initialize first hand
         self.reset_round()
     
     def reset_round(self):
         """Start a new hand"""
-        # Reset deck
         self.deck.reset()
         self.deck.shuffle()
-        
-        # Reset community cards
         self.community_cards = []
-        
-        # Reset pot and bets
         self.pot = 0
         self.current_bet = 0
         
-        # Reset all players
         for player in self.players:
             player.reset_hand()
         
-        # Move button clockwise
         self.button_position = (self.button_position + 1) % len(self.players)
-        
-        # Post blinds
         self._post_blinds()
-        
-        # Deal hole cards (2 to each player)
         self._deal_hole_cards()
         
-        # Betting starts left of big blind
         self.current_player_index = (self.button_position + 3) % len(self.players)
         self.betting_round = "preflop"
         self.players_acted_this_round = set()
@@ -86,7 +63,6 @@ class TexasHoldemGameState(AbstractGameState):
         """Post small and big blinds"""
         num_players = len(self.players)
         
-        # Small blind (left of button)
         sb_position = (self.button_position + 1) % num_players
         sb_player = self.players[sb_position]
         sb_amount = min(self.small_blind, sb_player.chips)
@@ -94,7 +70,6 @@ class TexasHoldemGameState(AbstractGameState):
         sb_player.current_bet = sb_amount
         self.pot += sb_amount
         
-        # Big blind (left of small blind)
         bb_position = (self.button_position + 2) % num_players
         bb_player = self.players[bb_position]
         bb_amount = min(self.big_blind, bb_player.chips)
@@ -102,37 +77,30 @@ class TexasHoldemGameState(AbstractGameState):
         bb_player.current_bet = bb_amount
         self.pot += bb_amount
         
-        # Set current bet to big blind
         self.current_bet = bb_amount
     
     def _deal_hole_cards(self):
         """Deal 2 cards to each player"""
         for player in self.players:
-            # Deck.deal() now returns List[str] directly!
             player.cards = self.deck.deal(2)
     
     def get_current_player(self) -> AbstractPlayer:
-        """Return the player whose turn it is"""
         return self.players[self.current_player_index]
     
     def get_active_players(self) -> List[AbstractPlayer]:
-        """Return players who haven't folded"""
         return [p for p in self.players if not p.folded]
     
     def get_community_cards(self) -> List[str]:
-        """Return community cards"""
         return self.community_cards
     
     def get_pot_size(self) -> int:
-        """Return current pot size"""
         return self.pot
     
     def get_current_bet(self) -> int:
-        """Return the current bet to call"""
         return self.current_bet
     
     def apply_action(self, player: AbstractPlayer, action: str, raise_amount: int = 0):
-        """Apply a player's action to game state"""
+        """Apply a player's action to game state safely"""
         
         if action == "fold":
             player.folded = True
@@ -141,7 +109,6 @@ class TexasHoldemGameState(AbstractGameState):
         elif action == "check":
             to_call = self.current_bet - player.current_bet
             if to_call > 0:
-                # Auto-convert to call
                 actual_call = min(to_call, player.chips)
                 player.update_stack(-actual_call)
                 player.current_bet += actual_call
@@ -157,21 +124,31 @@ class TexasHoldemGameState(AbstractGameState):
             self.players_acted_this_round.add(player)
 
         elif action == "raise":
-            if raise_amount <= self.current_bet:
-                raise ValueError(f"Raise amount must be greater than current bet {self.current_bet}")
-
-            to_bet = raise_amount - player.current_bet
+            # Limit raise to player’s chips and total chips in play
+            max_raise = player.chips + player.current_bet
+            safe_raise = min(raise_amount, max_raise)
+            
+            if safe_raise <= self.current_bet:
+                # Cannot raise below current bet
+                safe_raise = self.current_bet + min(self.big_blind, player.chips)
+            
+            to_bet = safe_raise - player.current_bet
             actual_bet = min(to_bet, player.chips)
-
+            
             player.update_stack(-actual_bet)
             player.current_bet += actual_bet
             self.pot += actual_bet
-
-            self.current_bet = player.current_bet
+            
+            self.current_bet = max(self.current_bet, player.current_bet)
             self.players_acted_this_round = set([player])
         
         else:
             raise ValueError(f"Unknown action: {action}")
+        
+        # Safety check: pot cannot exceed total chips
+        total_chips = sum(p.chips + p.current_bet for p in self.players)
+        if self.pot > total_chips:
+            self.pot = total_chips
     
     def next_player(self):
         """Advance to next active player"""
@@ -194,7 +171,7 @@ class TexasHoldemGameState(AbstractGameState):
         if attempts >= max_attempts:
             for p in self.players:
                 self.players_acted_this_round.add(p)
-
+    
     def is_betting_round_complete(self) -> bool:
         """Check if betting round is complete"""
         active_players = self.get_active_players()
@@ -221,75 +198,113 @@ class TexasHoldemGameState(AbstractGameState):
     
     def advance_stage(self):
         """Move to next stage and deal community cards"""
-        # Reset for new betting round
         self.current_bet = 0
         for player in self.players:
             player.current_bet = 0
         self.players_acted_this_round = set()
         
-        # Deal community cards based on stage
         if self.betting_round == "preflop":
-            # Deal flop (3 cards) - deck.deal() returns List[str] directly!
             self.community_cards = self.deck.deal(3)
             self.betting_round = "flop"
-        
         elif self.betting_round == "flop":
-            # Deal turn (1 card)
             self.community_cards.extend(self.deck.deal(1))
             self.betting_round = "turn"
-        
         elif self.betting_round == "turn":
-            # Deal river (1 card)
             self.community_cards.extend(self.deck.deal(1))
             self.betting_round = "river"
-        
         elif self.betting_round == "river":
-            # Go to showdown
             self.betting_round = "showdown"
         
-        # Betting starts left of button (or first active player)
         self.current_player_index = (self.button_position + 1) % len(self.players)
         while self.players[self.current_player_index].folded:
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
-    
+
     def determine_winner(self) -> List[Tuple[AbstractPlayer, int]]:
-        """Determine winner(s) at showdown"""
+        """
+        Determine winner(s) at showdown with CORRECT pot distribution
+        
+        ✅ FIXES:
+        1. Store pot BEFORE clearing it (for correct return value)
+        2. Handle fold scenario correctly
+        3. Proper hand comparison
+        """
+        
         active_players = self.get_active_players()
         
+        # Edge case: everyone folded (shouldn't happen but be safe)
+        if len(active_players) == 0:
+            return []
+        
+        # ✅ FIX: Store pot BEFORE awarding it
+        pot_to_award = self.pot
+        
+        # Single player wins (opponent folded)
         if len(active_players) == 1:
             winner = active_players[0]
-            winner.update_stack(self.pot)
-            return [(winner, self.pot)]
+            winner.update_stack(pot_to_award)
+            self.pot = 0  # Clear pot after awarding
+            return [(winner, pot_to_award)]  # ✅ Return correct amount
         
-        best_hand = None
+        # Multiple players - evaluate hands
+        best_rank = None
+        best_tiebreakers = None
         winners = []
         
         for player in active_players:
             full_hand = player.cards + self.community_cards
+            rank, tiebreakers = self.evaluator.evaluate_hand(full_hand)
             
-            if best_hand is None:
-                best_hand = full_hand
+            if best_rank is None:
+                best_rank = rank
+                best_tiebreakers = tiebreakers
                 winners = [player]
             else:
-                comparison = self.evaluator.compare_hands(full_hand, best_hand)
-                
-                if comparison == 1:
-                    best_hand = full_hand
+                # Higher rank = better hand
+                if rank > best_rank:
+                    best_rank = rank
+                    best_tiebreakers = tiebreakers
                     winners = [player]
-                elif comparison == 0:
-                    winners.append(player)
+                elif rank == best_rank:
+                    # Same rank, check tiebreakers
+                    tie_result = self._compare_tiebreakers(tiebreakers, best_tiebreakers)
+                    if tie_result > 0:
+                        best_tiebreakers = tiebreakers
+                        winners = [player]
+                    elif tie_result == 0:
+                        winners.append(player)
         
-        pot_share = self.pot // len(winners)
+        # Split pot among winners
+        pot_share = pot_to_award // len(winners)
         results = []
         
         for winner in winners:
             winner.update_stack(pot_share)
             results.append((winner, pot_share))
         
-        return results
+        # Clear pot
+        self.pot = 0
         
+        return results
+
+
+    def _compare_tiebreakers(self, tb1: List[int], tb2: List[int]) -> int:
+        """
+        Compare tiebreaker lists
+        
+        Returns:
+            1 if tb1 > tb2
+            -1 if tb1 < tb2
+            0 if equal
+        """
+        for i in range(min(len(tb1), len(tb2))):
+            if tb1[i] > tb2[i]:
+                return 1
+            elif tb1[i] < tb2[i]:
+                return -1
+        return 0
+    
     def get_game_state_dict(self):
-        """Return game state as dictionary for player decision making"""
+        """Return game state as dictionary"""
         return {
             "pot": self.pot,
             "current_bet": self.current_bet,
@@ -308,18 +323,11 @@ class TexasHoldemGameState(AbstractGameState):
         return len(active) <= 1 or self.betting_round == "showdown"
     
     def get_legal_actions(self, player):
-        """
-        FIXED RAISE VERSION: Only 1 raise size (pot-sized)
-        Best for deep Expectiminimax search (depth 4+)
-        
-        Actions: fold, check, call, raise (pot)
-        Branching factor: ~3-4 per node
-        """
+        """Generate safe legal actions"""
         actions = []
-        
         to_call = self.current_bet - player.current_bet
         pot = self.pot
-        
+
         # FOLD
         if to_call > 0:
             actions.append(('fold', 0))
@@ -332,20 +340,18 @@ class TexasHoldemGameState(AbstractGameState):
         if to_call > 0 and player.chips > 0:
             actions.append(('call', 0))
         
-        # RAISE (single pot-sized bet)
+        # RAISE (single safe raise)
         if player.chips > to_call:
-            raise_amount = self.current_bet + max(self.big_blind, pot)
+            raise_amount = player.current_bet + min(player.chips, max(self.big_blind, pot))
             chips_needed = raise_amount - player.current_bet
-            
             if chips_needed > 0 and player.chips >= chips_needed:
                 actions.append(('raise', raise_amount))
         
-        # Safety
         if len(actions) == 0:
             actions.append(('check', 0))
         
         return actions
-    
+        
     def get_remaining_deck_cards(self):
         """Return list of cards not yet dealt"""
         all_cards = []

@@ -39,20 +39,6 @@ class Player(AbstractPlayer):
         return f"<Player {self.name}: Chips={self.chips}, Bet={self.current_bet}, Folded={self.folded}>"
 
 # --------- Temporary Placeholder Deck for Testing ---------
-class Deck:
-    def __init__(self):
-        self.cards = [("Hearts", "A"), ("Hearts", "K"),
-                      ("Spades", "A"), ("Spades", "K")]
-    
-    def shuffle(self):
-        # placeholder: no shuffle needed for testing
-        pass
-    
-    def deal(self, num_cards):
-        dealt_cards = self.cards[:num_cards]
-        self.cards = self.cards[num_cards:]
-        return dealt_cards
-
 # # --------- Testing Player Class ---------
 # if __name__ == "__main__":
 #     # Create test player

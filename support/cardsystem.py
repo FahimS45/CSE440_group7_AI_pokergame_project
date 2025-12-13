@@ -2,11 +2,7 @@ from abstracts import AbstractCardSystem
 
 import random
 from enum import Enum
-from abc import ABC, abstractmethod
-from typing import List, Tuple
-
-# --- 2. Your Helper Classes (Suit, Rank, Card) ---
-# This is your original code, unchanged.
+from typing import List
 
 class Suit(Enum):
     """Card suits"""
@@ -35,9 +31,6 @@ class Rank(Enum):
         self.numeric_value = numeric_value 
         self.display = display
 
-
-
-
 class Card:
     """Represents a single playing card"""
     
@@ -45,8 +38,17 @@ class Card:
         self.suit = suit
         self.rank = rank
     
-    def __str__(self):
+    def to_string(self) -> str:
+        """
+        Convert card to string format for hand evaluator.
+        Format: RankSuit (e.g., 'AS' for Ace of Spades, '10H' for Ten of Hearts)
+        """
         return f"{self.rank.display}{self.suit.value}"
+    
+    def __str__(self):
+        """Display with Unicode symbols for pretty printing"""
+        suit_symbols = {'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠'}
+        return f"{self.rank.display}{suit_symbols[self.suit.value]}"
     
     def __repr__(self):
         return self.__str__()
@@ -58,8 +60,7 @@ class Card:
     
     def __lt__(self, other):
         """For sorting cards"""
-        return self.rank.value < other.rank.value
-
+        return self.rank.numeric_value < other.rank.numeric_value
 
 class Deck(AbstractCardSystem):
     """
@@ -87,7 +88,6 @@ class Deck(AbstractCardSystem):
         """
         random.shuffle(self.cards)
 
-    
     def deal(self, num_cards: int) -> List[str]:
         """
         Implements the abstract deal method.
@@ -95,20 +95,17 @@ class Deck(AbstractCardSystem):
         Deals cards from the deck.
         Returns a list of card strings (e.g.[(AS),(KH), '10C'])
         """
-
         if num_cards > len(self.cards):
             raise ValueError(f"Cannot deal {num_cards} cards. Only {len(self.cards)} left.")
         
         # Pop the Card and convert to string format
-
         dealt_cards = []
         for _ in range(num_cards):
            card = self.cards.pop()
            dealt_cards.append(card.to_string())
-           return dealt_cards
         
-    
-    
+        return dealt_cards
+        
     def cards_remaining(self) -> int:
         """A helper method specific to this Deck class"""
         return len(self.cards)

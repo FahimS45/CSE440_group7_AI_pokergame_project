@@ -2,9 +2,10 @@
 Game Manager for Texas Hold'em Poker.
 """
 
+# Minimal change: Adjusted imports to match your project's 'test_' structure
 from game_state import TexasHoldemGameState
 from expectiminimax import ExpectiminimaxAgent
-from player_logic import Player
+from player_logic import Player # Assumed location for Player class
 from typing import List
 
 class PokerGameManager:
@@ -29,6 +30,7 @@ class PokerGameManager:
         for i, name in enumerate(player_names):
             if i in ai_players:
                 self.players.append(
+                    # Using search_depth=3 from the GitHub code
                     ExpectiminimaxAgent(name, starting_chips, search_depth=3)
                 )
             else:
@@ -120,14 +122,15 @@ class PokerGameManager:
             if verbose:
                 self._print_player_turn(current_player)
             
-            # ✅ FIXED: Get player's decision (works for all player types)
+            # ✅ Handles AI vs AI, Human vs AI, Deterministic vs AI
             if isinstance(current_player, ExpectiminimaxAgent):
                 action_result = current_player.make_decision(self.game_state)
             else:
+                # Passes a simplified dict for non-AI players like HumanPlayer or Deterministic opponents
                 game_state_dict = self.game_state.get_game_state_dict()
                 action_result = current_player.make_decision(game_state_dict)
             
-            # ✅ FIXED: Handle both tuple and string returns
+            # ✅ Handle both tuple and string returns
             if isinstance(action_result, tuple):
                 action, amount = action_result
             else:
@@ -141,14 +144,30 @@ class PokerGameManager:
                     print(f"{current_player.name} folds")
             
             elif action == "check":
-                self.game_state.apply_action(current_player, "check")
                 to_call = self.game_state.current_bet - current_player.current_bet
-                if verbose:
-                    if to_call > 0:
-                        print(f"{current_player.name} calls {to_call} (auto-call)")
-                    else:
+                
+                # Check is implicitly a call if there's a bet to match
+                if to_call > 0 and current_player.chips >= to_call:
+                    action = "call" # Coerce to call before applying
+                    self.game_state.apply_action(current_player, action)
+                    if verbose:
+                        print(f"{current_player.name} calls {to_call} (auto-call/check)")
+                elif to_call > 0 and current_player.chips < to_call:
+                    action = "call" # Coerce to all-in call
+                    self.game_state.apply_action(current_player, action)
+                    if verbose:
+                        print(f"{current_player.name} calls All-In ({current_player.chips}) (auto-call/check)")
+                elif to_call == 0:
+                    self.game_state.apply_action(current_player, action)
+                    if verbose:
                         print(f"{current_player.name} checks")
-            
+                else:
+                    # Case for a player trying to check when they should call/fold (shouldn't happen with valid logic)
+                    self.game_state.apply_action(current_player, "check")
+                    if verbose:
+                         print(f"{current_player.name} checks")
+
+
             elif action == "call":
                 to_call = self.game_state.current_bet - current_player.current_bet
                 self.game_state.apply_action(current_player, "call")
@@ -156,7 +175,6 @@ class PokerGameManager:
                     print(f"{current_player.name} calls {to_call}")
             
             elif action == "raise":
-                # ✅ FIXED: All players can raise now!
                 try:
                     self.game_state.apply_action(current_player, "raise", amount)
                     if verbose:
@@ -178,8 +196,9 @@ class PokerGameManager:
             # Move to next player
             self.game_state.next_player()
             
-            # Safety check
-            if all(p.folded or p.chips == 0 for p in self.game_state.players[:-1]):
+            # Safety check (if all players but one are folded/all-in)
+            num_active_or_allin = len([p for p in self.game_state.players if not p.folded and p.chips > 0])
+            if num_active_or_allin <= 1 and self.game_state.is_betting_round_complete():
                 break
     
     def _print_game_status(self):
@@ -192,7 +211,6 @@ class PokerGameManager:
     
     def _print_player_turn(self, player: Player):
         """Print player's turn information"""
-        # player.cards is already List[str] - no conversion needed!
         to_call = self.game_state.current_bet - player.current_bet
         
         print(f"\n{player.name}'s turn:")
@@ -208,10 +226,11 @@ class PokerGameManager:
         print("\nPlayer hands:")
         
         for player in self.game_state.get_active_players():
-            # player.cards is already List[str]
             full_hand = player.cards + self.game_state.community_cards
             
-            hand_eval = self.game_state.evaluator.evaluate_hand(full_hand)
+            # Assuming self.game_state.evaluator exists and is available
+            # It is initialized in TexasHoldemGameState
+            hand_eval = self.game_state.evaluator.evaluate_hand(full_hand) 
             
             print(f"  {player.name}: {player.cards} -> Rank: {hand_eval[0]}, Tiebreakers: {hand_eval[1]}")
     
