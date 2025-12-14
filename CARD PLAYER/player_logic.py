@@ -1,7 +1,6 @@
-# player_logic.py
+
 from abstracts import AbstractPlayer
 
-# --------- Player Class Implementation ---------
 class Player(AbstractPlayer):
     def __init__(self, name: str, chips: int) -> None:
         self.name = name
