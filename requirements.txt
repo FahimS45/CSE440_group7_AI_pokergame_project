@@ -1,0 +1,42 @@
+# Requirements for Texas Hold'em Poker AI Project
+
+# Core Python Version
+Python >= 3.8
+
+# Standard Library (No External Dependencies Required)
+# This project uses only Python's built-in standard library modules:
+# - random (for shuffling, Monte Carlo simulation)
+# - copy (for deep cloning game states)
+# - typing (for type hints)
+# - abc (for abstract base classes)
+# - time (for performance measurement)
+# - json (for experimental results export)
+# - datetime (for timestamps)
+# - enum (for card suits and ranks)
+
+# Optional Dependencies (for development/testing)
+# These are not required to run the project but useful for development
+
+# Code formatting and linting
+black>=23.0.0
+flake8>=6.0.0
+pylint>=2.17.0
+
+# Type checking
+mypy>=1.0.0
+
+# Testing (optional, for extended test suite)
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Documentation generation (optional)
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+
+# Performance profiling (optional)
+memory-profiler>=0.61.0
+line-profiler>=4.0.0
+
+# Note: The core poker game and AI agent require ZERO external dependencies.
+# All optional dependencies above are only for development purposes.
+# To run the game, simply use: python main.py
