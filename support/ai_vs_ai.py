@@ -23,7 +23,7 @@ class ai_vs_ai:
         self.ai1 = ExpectiminimaxAgent(
             name="AI_Agent_1",
             chips=starting_chips,
-            search_depth=2
+            search_depth=3
         )
         
         self.ai2 = ExpectiminimaxAgent(

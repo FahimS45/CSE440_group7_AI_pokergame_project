@@ -1,18 +1,16 @@
 """
 Human vs AI Texas Hold'em Poker
-✅ NEW: Hidden actions - players don't see each other's decisions until showdown
-✅ Shows: Flop, Turn, River, Current Bet, Pot
+✅ REAL-TIME: Actions are visible immediately (like real poker)
+✅ HIDDEN: Only hole cards are hidden until showdown
 """
 
-from Deterministic_player_simulation.game_state import TexasHoldemGameState
-from Deterministic_player_simulation.expectiminimax import ExpectiminimaxAgent
-from Deterministic_player_simulation.abstracts import AbstractPlayer
+from support.game_state import TexasHoldemGameState
+from support.expectiminimax import ExpectiminimaxAgent
+from support.abstracts import AbstractPlayer
 
 
 class HumanPlayer(AbstractPlayer):
-    """
-    Human player with terminal input
-    """
+    """Human player with terminal input"""
     
     def __init__(self, name: str, chips: int):
         self.name = name
@@ -22,10 +20,7 @@ class HumanPlayer(AbstractPlayer):
         self.folded = False
     
     def make_decision(self, game_state) -> tuple:
-        """
-        Get human decision from terminal
-        ✅ Only shows PUBLIC information (community cards, pot, current bet)
-        """
+        """Get human decision from terminal"""
         print(f"\n{'='*70}")
         print(f"YOUR TURN - {self.name}")
         print(f"{'='*70}")
@@ -102,9 +97,7 @@ class HumanPlayer(AbstractPlayer):
 
 
 class HumanVsAIGame:
-    """
-    Poker game with HIDDEN actions
-    """
+    """Poker game with REAL-TIME visible actions"""
     
     def __init__(self, human_name: str = "You", starting_chips: int = 1000,
                  small_blind: int = 10, big_blind: int = 20, ai_depth: int = 2):
@@ -120,14 +113,10 @@ class HumanVsAIGame:
         
         self.hand_number = 0
         self.starting_chips = starting_chips
-        
-        # Track actions for showdown reveal
-        self.action_history = []
     
     def play_hand(self):
-        """Play one hand with HIDDEN actions"""
+        """Play one hand with VISIBLE actions"""
         self.hand_number += 1
-        self.action_history = []
         
         print("\n" + "="*70)
         print(f"🎲 HAND #{self.hand_number}")
@@ -155,7 +144,6 @@ class HumanVsAIGame:
                 print(f"🏆 {winner.name} wins {self.game_state.pot} chips!")
                 print(f"{'='*70}")
                 print(f"💡 Reason: Opponent folded")
-                self._reveal_action_history()
                 break
             
             # Advance stage
@@ -170,8 +158,7 @@ class HumanVsAIGame:
     
     def _play_betting_round(self, round_name: str):
         """
-        Play betting round with HIDDEN actions
-        ✅ Actions are logged but not displayed immediately
+        ✅ REAL-TIME: Actions are shown immediately
         """
         safety = 0
         max_actions = 50
@@ -192,28 +179,53 @@ class HumanVsAIGame:
                 self.game_state.next_player()
                 continue
             
-            # Get decision (HIDDEN from opponent)
+            # Get decision
             if isinstance(current, HumanPlayer):
                 action, amount = current.make_decision(self.game_state)
                 
-                # ✅ Don't show details - just confirm action taken
-                print(f"\n✅ Your action recorded")
+                # Show human action immediately
+                to_call = self.game_state.current_bet - current.current_bet
+                if action == 'fold':
+                    print(f"\n❌ You folded")
+                elif action == 'check':
+                    if to_call > 0:
+                        print(f"\n📞 You called {to_call} chips")
+                    else:
+                        print(f"\n✅ You checked")
+                elif action == 'call':
+                    print(f"\n📞 You called {to_call} chips")
+                elif action == 'raise':
+                    print(f"\n🚀 You raised to {amount} chips")
                 
             else:
-                # AI decision (HIDDEN from human)
-                print(f"\n🤖 AI is thinking...")
+                # ✅ AI decision - SHOW IT IMMEDIATELY
+                to_call = self.game_state.current_bet - current.current_bet
+                
+                print(f"\n{'─'*70}")
+                print(f"🤖 AI_Agent's turn")
+                print(f"   Chips: {current.chips} | Current bet: {current.current_bet} | To call: {to_call}")
+                print(f"🤔 AI is thinking...")
+                
+                import time
+                start = time.time()
                 action, amount = current.make_decision(self.game_state)
-                print(f"✅ AI action recorded")
-            
-            # Record action for later reveal
-            to_call = self.game_state.current_bet - current.current_bet
-            self.action_history.append({
-                'round': round_name,
-                'player': current.name,
-                'action': action,
-                'amount': amount,
-                'to_call': to_call
-            })
+                elapsed = time.time() - start
+                
+                # ✅ SHOW AI ACTION IMMEDIATELY (like real poker)
+                if action == 'fold':
+                    print(f"❌ AI_Agent folded")
+                elif action == 'check':
+                    if to_call > 0:
+                        print(f"📞 AI_Agent called {to_call} chips")
+                    else:
+                        print(f"✅ AI_Agent checked")
+                elif action == 'call':
+                    print(f"📞 AI_Agent called {to_call} chips")
+                elif action == 'raise':
+                    print(f"🚀 AI_Agent raised to {amount} chips")
+                
+                print(f"⏱️  Decision time: {elapsed:.2f}s")
+                print(f"{'─'*70}")
             
             # Apply action
             self.game_state.apply_action(current, action, amount)
@@ -230,16 +242,22 @@ class HumanVsAIGame:
         print(f"🌍 Final community cards: {self.game_state.community_cards}")
         print()
         
-        # Show both hands
+        # ✅ NOW reveal AI's hole cards
+        hand_rank_names = {
+            10: "Royal Flush", 9: "Straight Flush", 8: "Four of a Kind",
+            7: "Full House", 6: "Flush", 5: "Straight",
+            4: "Three of a Kind", 3: "Two Pair", 2: "One Pair", 1: "High Card"
+        }
+        
         for player in self.game_state.get_active_players():
             full_hand = player.cards + self.game_state.community_cards
             hand_eval = self.game_state.evaluator.evaluate_hand(full_hand)
-            hand_rank_names = {
-                10: "Royal Flush", 9: "Straight Flush", 8: "Four of a Kind",
-                7: "Full House", 6: "Flush", 5: "Straight",
-                4: "Three of a Kind", 3: "Two Pair", 2: "One Pair", 1: "High Card"
-            }
-            print(f"🃏 {player.name}: {player.cards}")
+            
+            if isinstance(player, HumanPlayer):
+                print(f"🃏 {player.name} (You): {player.cards}")
+            else:
+                print(f"🤖 {player.name}: {player.cards}")  # ✅ Reveal AI cards at showdown
+            
             print(f"   → {hand_rank_names.get(hand_eval[0], 'Unknown')}")
         
         # Winner
@@ -249,42 +267,6 @@ class HumanVsAIGame:
             print(f"{'='*70}")
             print(f"🏆 {winner.name} WINS {amount} chips!")
             print(f"{'='*70}")
-        
-        # Reveal action history
-        self._reveal_action_history()
-    
-    def _reveal_action_history(self):
-        """
-        ✅ NEW: Reveal all actions taken during the hand
-        """
-        print(f"\n{'='*70}")
-        print("📜 ACTION HISTORY (Now Revealed)")
-        print(f"{'='*70}")
-        
-        current_round = None
-        for action in self.action_history:
-            if action['round'] != current_round:
-                current_round = action['round']
-                print(f"\n--- {current_round.upper()} ---")
-            
-            player = action['player']
-            act = action['action']
-            amt = action['amount']
-            to_call = action['to_call']
-            
-            if act == 'fold':
-                print(f"  ❌ {player} folded")
-            elif act == 'check':
-                if to_call > 0:
-                    print(f"  📞 {player} called {to_call}")
-                else:
-                    print(f"  ✅ {player} checked")
-            elif act == 'call':
-                print(f"  📞 {player} called {to_call}")
-            elif act == 'raise':
-                print(f"  🚀 {player} raised to {amt}")
-        
-        print(f"{'='*70}")
     
     def _print_status(self):
         """Print chip counts"""
@@ -303,7 +285,8 @@ class HumanVsAIGame:
         print("="*70)
         print(f"Starting chips: {self.starting_chips}")
         print(f"Blinds: {self.game_state.small_blind}/{self.game_state.big_blind}")
-        print("\n⚠️  IMPORTANT: Actions are HIDDEN until showdown!")
+        print("\n✅ REAL-TIME POKER: You'll see AI actions immediately!")
+        print("🔒 AI hole cards hidden until showdown")
         print("="*70)
         
         while True:

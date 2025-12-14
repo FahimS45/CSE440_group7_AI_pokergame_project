@@ -1,7 +1,7 @@
 import random
 from typing import List
-from hand_evaluator import PokerHandEvaluator
-from abstracts import AbstractPlayer
+from support.hand_evaluator import PokerHandEvaluator
+from support.abstracts import AbstractPlayer
 
 
 class MonteCarloEvaluator:

@@ -3,7 +3,7 @@ Fixed Poker Hand Evaluator - Corrects all bugs
 """
 
 from typing import List, Tuple
-from abstracts import AbstractHandEvaluator
+from support.abstracts import AbstractHandEvaluator
 
 
 class PokerHandEvaluator(AbstractHandEvaluator):

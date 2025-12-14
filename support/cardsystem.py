@@ -1,4 +1,4 @@
-from abstracts import AbstractCardSystem
+from support.abstracts import AbstractCardSystem
 
 import random
 from enum import Enum

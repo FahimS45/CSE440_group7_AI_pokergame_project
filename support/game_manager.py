@@ -3,8 +3,8 @@ Game Manager for Texas Hold'em Poker.
 """
 
 # Minimal change: Adjusted imports to match your project's 'test_' structure
-from game_state import TexasHoldemGameState
-from expectiminimax import ExpectiminimaxAgent
+from support.game_state import TexasHoldemGameState
+from support.expectiminimax import ExpectiminimaxAgent
 from player_logic import Player # Assumed location for Player class
 from typing import List
 

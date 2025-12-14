@@ -2,13 +2,11 @@
 GameState implementation for Texas Hold'em poker.
 """
 
-import copy # Minimal change: Added import for clone() method
+import copy 
 from typing import List, Tuple
-
-# Minimal change: Adjusted imports to match your project's 'test_' structure
-from abstracts import AbstractGameState, AbstractPlayer
-from cardsystem import Deck # Assumed location for Deck class
-from hand_evaluator import PokerHandEvaluator # Assuming PokerHandEvaluator is in hand_evaluator.py (or test_hand_evaluator.py)
+from support.abstracts import AbstractGameState, AbstractPlayer
+from support.cardsystem import Deck 
+from support.hand_evaluator import PokerHandEvaluator 
 
 class TexasHoldemGameState(AbstractGameState):
     """

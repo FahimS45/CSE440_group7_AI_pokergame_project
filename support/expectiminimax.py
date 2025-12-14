@@ -1,6 +1,6 @@
 import random
-from abstracts import AbstractAgent
-from monte_carlo import evaluate_state_heuristic
+from support.abstracts import AbstractAgent
+from support.monte_carlo import evaluate_state_heuristic
 from typing import Tuple
 
 
